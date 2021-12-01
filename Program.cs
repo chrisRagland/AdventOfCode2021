@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -15,11 +16,13 @@ namespace AdventOfCode2021
 		{
 			//Initial Setup
 			int[] input = File.ReadAllLines(@"input\1.txt").Select(x => int.Parse(x)).ToArray();
+			Stopwatch sw = new();
 			int count = 0;
-
-			//Part 1
 			int a = input[0];
 			int b = 0;
+
+			//Part 1
+			sw.Start();
 			for (int i = 1; i < input.Length; i++)
 			{
 				b = input[i];
@@ -27,26 +30,30 @@ namespace AdventOfCode2021
 					count++;
 				a = b;
 			}
+			sw.Stop();
 
 			Console.WriteLine($"Day 1, Part 1: {count} measurements larger.");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 
 			//Intermission
 			Console.WriteLine();
 			count = 0;
+			a = input[0];
+			sw.Reset();
 
 			//Part 2
-			int windowA = input[0] + input[1] + input[2];
-			int windowB = 0;
-
+			sw.Start();
 			for (int i = 1; i < input.Length - 2; i++)
 			{
-				windowB = input[i] + input[(i + 1)] + input[(i + 2)];
-				if (windowB > windowA)
+				b = input[(i + 2)];
+				if (b > a)
 					count++;
-				windowA = windowB;
+				a = input[i];
 			}
+			sw.Stop();
 
 			Console.WriteLine($"Day 1, Part 2: {count} sliding windows larger.");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
 }
