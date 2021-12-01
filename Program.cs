@@ -18,17 +18,13 @@ namespace AdventOfCode2021
 			int[] input = File.ReadAllLines(@"input\1.txt").Select(x => int.Parse(x)).ToArray();
 			Stopwatch sw = new();
 			int count = 0;
-			int a = input[0];
-			int b = 0;
 
 			//Part 1
 			sw.Start();
 			for (int i = 1; i < input.Length; i++)
 			{
-				b = input[i];
-				if (b > a)
+				if (input[i] > input[(i - 1)])
 					count++;
-				a = b;
 			}
 			sw.Stop();
 
@@ -38,17 +34,14 @@ namespace AdventOfCode2021
 			//Intermission
 			Console.WriteLine();
 			count = 0;
-			a = input[0];
 			sw.Reset();
 
 			//Part 2
 			sw.Start();
 			for (int i = 1; i < input.Length - 2; i++)
 			{
-				b = input[(i + 2)];
-				if (b > a)
+				if (input[(i + 2)] > input[(i - 1)])
 					count++;
-				a = input[i];
 			}
 			sw.Stop();
 
