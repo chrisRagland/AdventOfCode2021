@@ -14,7 +14,7 @@ namespace AdventOfCode2021
 		private static void SolveDay1()
 		{
 			//Initial Setup
-			int[] input = File.ReadAllLines(@"input\1a.txt").Select(x => int.Parse(x)).ToArray();
+			int[] input = File.ReadAllLines(@"input\1.txt").Select(x => int.Parse(x)).ToArray();
 			int count = 0;
 
 			//Part 1

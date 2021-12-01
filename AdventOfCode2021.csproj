@@ -6,11 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="input\1a.txt" />
+    <None Remove="input\1.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="input\1a.txt">
+    <Content Include="input\1.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
