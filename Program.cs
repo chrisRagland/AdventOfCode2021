@@ -229,7 +229,7 @@ namespace AdventOfCode2021
 						oxygen = zeroOxygen;
 						if (oxygenCount[0] == 1)
 						{
-							oxygenValue = input[(oxygen.TakeWhile(x => !x).Count())];
+							oxygenValue = input[Array.IndexOf(oxygen, true)];
 							doneOxygen = true;
 						}
 					}
@@ -238,7 +238,7 @@ namespace AdventOfCode2021
 						oxygen = oneOxygen;
 						if (oxygenCount[1] == 1)
 						{
-							oxygenValue = input[(oxygen.TakeWhile(x => !x).Count())];
+							oxygenValue = input[Array.IndexOf(oxygen, true)];
 							doneOxygen = true;
 						}
 					}
@@ -251,7 +251,7 @@ namespace AdventOfCode2021
 						co2 = oneCo2;
 						if (co2Count[0] == 1)
 						{
-							co2Value = input[(co2.TakeWhile(x => !x).Count())];
+							co2Value = input[Array.IndexOf(co2,true)];
 							doneCo2 = true;
 						}
 					}
@@ -260,7 +260,7 @@ namespace AdventOfCode2021
 						co2 = zeroCo2;
 						if (co2Count[1] == 1)
 						{
-							co2Value = input[(co2.TakeWhile(x => !x).Count())];
+							co2Value = input[Array.IndexOf(co2, true)];
 							doneCo2 = true;
 						}
 					}
@@ -270,7 +270,7 @@ namespace AdventOfCode2021
 
 			var epsilonRate = new string(gammaRate.Select(x => x == '0' ? '1' : '0').ToArray());
 
-			var partOneAnswer = Convert.ToInt32(gammaRate,2) * Convert.ToInt32(epsilonRate,2);
+			var partOneAnswer = Convert.ToInt32(gammaRate, 2) * Convert.ToInt32(epsilonRate, 2);
 			var partTwoAnswer = Convert.ToInt32(oxygenValue, 2) * Convert.ToInt32(co2Value, 2);
 
 			Console.WriteLine($"Day 3, Part 1: Power consumption: {partOneAnswer}");
