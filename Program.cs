@@ -10,46 +10,42 @@ namespace AdventOfCode2021
 	{
 		static void Main(string[] args)
 		{
-			//SolveDay1();
-			//Console.WriteLine();
-			//SolveDay2();
-			//Console.WriteLine();
+			SolveDay1();
+			Console.WriteLine();
+			SolveDay2();
+			Console.WriteLine();
 			SolveDay3();
+			Console.WriteLine();
+			SolveDay4();
 		}
 
 		private static void SolveDay1()
 		{
 			//Initial Setup
 			int[] input = File.ReadAllLines(@"input\1.txt").Select(x => int.Parse(x)).ToArray();
+
 			Stopwatch sw = new();
-			int count = 0;
+			sw.Start();
+			int day1Part1Solution = 0;
+			int day1Part2Solution = 0;
 
 			//Part 1
-			sw.Start();
 			for (int i = 1; i < input.Length; i++)
 			{
 				if (input[i] > input[(i - 1)])
-					count++;
+					day1Part1Solution++;
 			}
-			sw.Stop();
-
-			Console.WriteLine($"Day 1, Part 1: {count} measurements larger.");
-			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
-
-			//Intermission
-			count = 0;
-			sw.Reset();
 
 			//Part 2
-			sw.Start();
 			for (int i = 1; i < input.Length - 2; i++)
 			{
 				if (input[(i + 2)] > input[(i - 1)])
-					count++;
+					day1Part2Solution++;
 			}
-			sw.Stop();
 
-			Console.WriteLine($"Day 1, Part 2: {count} sliding windows larger.");
+			sw.Stop();
+			Console.WriteLine($"Day 1, Part 1: {day1Part1Solution}");
+			Console.WriteLine($"Day 1, Part 2: {day1Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 
@@ -68,68 +64,44 @@ namespace AdventOfCode2021
 				.Select(x => new Day2SubCommand() {
 					Command = x[0],
 					XValue = int.Parse(x[1])
-				});
+				}).ToArray();
+
 			Stopwatch sw = new();
+			sw.Start();
+
+			int day2Part1Solution = 0;
+			int day2Part2Solution = 0;
+
 			var horizontal = 0;
 			var depth = 0;
-
-			//Part 1
-			sw.Start();
-			foreach (var item in input)
-			{
-				switch (item.Command)
-				{
-					case "forward":
-						horizontal += item.XValue;
-						break;
-					case "down":
-						depth += item.XValue;
-						break;
-					case "up":
-						depth -= item.XValue;
-						break;
-					default:
-						break;
-				}
-			}
-			sw.Stop();
-
-			var part1Result = horizontal * depth;
-
-			Console.WriteLine($"Day 2, Part 1: {part1Result}");
-			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
-
-			//Intermission
-			horizontal = 0;
-			depth = 0;
 			var aim = 0;
-			sw.Reset();
 
-			//Part 2
-			sw.Start();
-			foreach (var item in input)
+			//Part 1 & Part 2
+			for (int i = 0; i < input.Length; i++)
 			{
-				switch (item.Command)
+				switch (input[i].Command)
 				{
 					case "forward":
-						horizontal += item.XValue;
-						depth += (aim * item.XValue);
+						horizontal += input[i].XValue;
+						aim += (depth * input[i].XValue);
 						break;
 					case "down":
-						aim += item.XValue;
+						depth += input[i].XValue;
 						break;
 					case "up":
-						aim -= item.XValue;
+						depth -= input[i].XValue;
 						break;
 					default:
 						break;
 				}
 			}
+
+			day2Part1Solution = horizontal * depth;
+			day2Part2Solution = horizontal * aim;
+
 			sw.Stop();
-
-			var part2Result = horizontal * depth;
-
-			Console.WriteLine($"Day 2, Part 2: {part2Result}");
+			Console.WriteLine($"Day 2, Part 1: {day2Part1Solution}");
+			Console.WriteLine($"Day 2, Part 2: {day2Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 
@@ -137,6 +109,9 @@ namespace AdventOfCode2021
 		{
 			//Initial Setup
 			var input = File.ReadAllLines(@"input\3.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
 
 			int[] count;
 			string gammaRate = string.Empty;
@@ -155,10 +130,7 @@ namespace AdventOfCode2021
 			bool[] zeroCo2;
 			bool[] oneCo2;
 
-			Stopwatch sw = new();
-
 			//Part 1 & Part 2
-			sw.Start();
 			for (int i = 0; i < input[0].Length; i++)
 			{
 				count = new int[2];
@@ -266,15 +238,142 @@ namespace AdventOfCode2021
 					}
 				}
 			}
-			sw.Stop();
 
 			var epsilonRate = new string(gammaRate.Select(x => x == '0' ? '1' : '0').ToArray());
 
-			var partOneAnswer = Convert.ToInt32(gammaRate, 2) * Convert.ToInt32(epsilonRate, 2);
-			var partTwoAnswer = Convert.ToInt32(oxygenValue, 2) * Convert.ToInt32(co2Value, 2);
+			var day3Part1Solution = Convert.ToInt32(gammaRate, 2) * Convert.ToInt32(epsilonRate, 2);
+			var day3Part2Solution = Convert.ToInt32(oxygenValue, 2) * Convert.ToInt32(co2Value, 2);
 
-			Console.WriteLine($"Day 3, Part 1: Power consumption: {partOneAnswer}");
-			Console.WriteLine($"Day 3, Part 2: Life support rating: {partTwoAnswer}");
+			sw.Stop();
+			Console.WriteLine($"Day 3, Part 1: {day3Part1Solution}");
+			Console.WriteLine($"Day 3, Part 2: {day3Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public struct Day4BingoBoard
+		{
+			public int[] Layout { get; set; }
+			public bool[] Called { get; set; }
+
+			//Determine if the board has won
+			public bool BoardWon
+			{
+				get
+				{
+					for (int i = 0; i < 5; i++)
+					{
+						if ((Called[i * 5] && Called[(i * 5) + 1] && Called[(i * 5) + 2] && Called[(i * 5) + 3] && Called[(i * 5) + 4])
+							||
+							(Called[i] && Called[i + 5] && Called[i + 10] && Called[i + 15] && Called[i + 20]))
+						{
+							return true;
+						}
+					}
+					return false;
+				}
+			}
+
+			//Help score won boards
+			public int UncalledSum
+			{
+				get
+				{
+					int sum = 0;
+					for (int i = 0; i < 25; i++)
+					{
+						if (!Called[i])
+							sum += Layout[i];
+					}
+					return sum;
+				}
+			}
+		}
+
+		private static void SolveDay4()
+		{
+			//Initial Setup
+			var input = File.ReadAllLines(@"input\4.txt");
+
+			var sw = new Stopwatch();
+			sw.Start();
+
+			var numberSequence = input[0].Split(',').Select(x => int.Parse(x)).ToList();
+			List<Day4BingoBoard> Boards = new();
+			int day4Part1Solution = 0;
+			int day4Part2Solution = 0;
+
+			//Board Setup
+			for (int i = 2; i < input.Length; i += 6)
+			{
+				var newBoard = new Day4BingoBoard
+				{
+					Called = new bool[25],
+					Layout = new int[25]
+				};
+
+				var a = input[i].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
+				var b = input[i + 1].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
+				var c = input[i + 2].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
+				var d = input[i + 3].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
+				var e = input[i + 4].Split(" ", StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x)).ToArray();
+				for (int j = 0; j < 5; j++)
+				{
+					newBoard.Layout[j] = a[j];
+					newBoard.Layout[j + 5] = b[j];
+					newBoard.Layout[j + 10] = c[j];
+					newBoard.Layout[j + 15] = d[j];
+					newBoard.Layout[j + 20] = e[j];
+				}
+
+				Boards.Add(newBoard);
+			}
+
+			//Solved Board Setup
+			int boardCount = Boards.Count;
+			int boardsThatHaveWon = 0;
+			bool[] DoneBoard = new bool[boardCount];
+
+			//Play Bingo! Part 1 & Part 2
+			foreach (var item in numberSequence)
+			{
+				for (int i = 0; i < Boards.Count; i++)
+				{
+					if (DoneBoard[i])
+						continue;
+					else
+					{
+						var b = Boards[i];
+						for (int j = 0; j < 25; j++)
+						{
+							if (b.Layout[j] == item)
+								b.Called[j] = true;
+						}
+
+						if (b.BoardWon)
+						{
+							boardsThatHaveWon++;
+							DoneBoard[i] = true;
+							if (boardsThatHaveWon == 1)
+							{
+								day4Part1Solution = b.UncalledSum * item;
+							}
+							else if (boardsThatHaveWon == boardCount)
+							{
+								day4Part2Solution = b.UncalledSum * item;
+							}
+						}
+					}
+				}
+
+				if (boardsThatHaveWon == boardCount)
+				{
+					break;
+				}
+			}
+
+			sw.Stop();
+			Console.WriteLine($"Day 4, Part 1: {day4Part1Solution}");
+			Console.WriteLine($"Day 4, Part 2: {day4Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
