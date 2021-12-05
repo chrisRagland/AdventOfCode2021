@@ -10,13 +10,15 @@ namespace AdventOfCode2021
 	{
 		static void Main(string[] args)
 		{
-			SolveDay1();
-			Console.WriteLine();
-			SolveDay2();
-			Console.WriteLine();
-			SolveDay3();
-			Console.WriteLine();
-			SolveDay4();
+			//SolveDay1();
+			//Console.WriteLine();
+			//SolveDay2();
+			//Console.WriteLine();
+			//SolveDay3();
+			//Console.WriteLine();
+			//SolveDay4();
+			//Console.WriteLine();
+			SolveDay5();
 		}
 
 		private static void SolveDay1()
@@ -340,40 +342,243 @@ namespace AdventOfCode2021
 				{
 					if (DoneBoard[i])
 						continue;
-					else
-					{
-						var b = Boards[i];
-						for (int j = 0; j < 25; j++)
-						{
-							if (b.Layout[j] == item)
-								b.Called[j] = true;
-						}
 
-						if (b.BoardWon)
-						{
-							boardsThatHaveWon++;
-							DoneBoard[i] = true;
-							if (boardsThatHaveWon == 1)
-							{
-								day4Part1Solution = b.UncalledSum * item;
-							}
-							else if (boardsThatHaveWon == boardCount)
-							{
-								day4Part2Solution = b.UncalledSum * item;
-							}
-						}
+					var board = Boards[i];
+					for (int j = 0; j < 25; j++)
+					{
+						if (board.Layout[j] == item)
+							board.Called[j] = true;
+					}
+
+					if (board.BoardWon)
+					{
+						boardsThatHaveWon++;
+						DoneBoard[i] = true;
+
+						if (boardsThatHaveWon == 1)
+							day4Part1Solution = board.UncalledSum * item;
+
+						if (boardsThatHaveWon == boardCount)
+							day4Part2Solution = board.UncalledSum * item;
 					}
 				}
 
 				if (boardsThatHaveWon == boardCount)
-				{
 					break;
-				}
 			}
 
 			sw.Stop();
 			Console.WriteLine($"Day 4, Part 1: {day4Part1Solution}");
 			Console.WriteLine($"Day 4, Part 2: {day4Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public class Day5HydrothermalVents
+		{
+			private int[,] grid;
+			public List<Day5VentLine> lines = new();
+
+			protected void InitGrid()
+			{
+				int maxX = Math.Max(lines.Max(x => x.Point1.X), lines.Max(x => x.Point2.X));
+				int maxY = Math.Max(lines.Max(x => x.Point1.Y), lines.Max(x => x.Point2.Y));
+				int square = Math.Max(maxX, maxY);
+				grid = new int[square + 1, square + 1];
+			}
+
+			public void ProcessStraightLines()
+			{
+				if (grid == null)
+				{
+					InitGrid();
+				}
+
+				foreach (var item in lines)
+				{
+					if (item.IsStraight)
+					{
+						if (item.Point1.X < item.Point2.X)
+						{
+							//Horizontal
+							for (int i = item.Point1.X; i <= item.Point2.X; i++)
+							{
+								grid[i, item.Point1.Y]++;
+							}
+						}
+						else
+						{
+							//Vertical
+							for (int i = item.Point1.Y; i <= item.Point2.Y; i++)
+							{
+								grid[item.Point1.X, i]++;
+							}
+						}
+					}
+				}
+			}
+
+			public void ProcessDiagonalLines()
+			{
+				if (grid == null)
+				{
+					InitGrid();
+				}
+
+				foreach (var item in lines)
+				{
+					if (item.IsDiagonal)
+					{
+						int y = item.Point1.Y;
+						for (int i = item.Point1.X; i <= item.Point2.X; i++)
+						{
+							grid[i, y]++;
+							y += item.DiagonalYDiff;
+						}
+					}
+				}
+			}
+
+			public void DrawCurrentGrid()
+			{
+				for (int i = 0; i < grid.GetLength(0); i++)
+				{
+					for (int j = 0; j < grid.GetLength(1); j++)
+					{
+						if (grid[j, i] > 0)
+							Console.Write(grid[j, i]);
+						else
+							Console.Write('.');
+					}
+					Console.WriteLine();
+				}
+				Console.WriteLine();
+			}
+
+			public int CurrentOverlappingGridScore()
+			{
+				var score = 0;
+				for (int i = 0; i < grid.GetLength(0); i++)
+				{
+					for (int j = 0; j < grid.GetLength(1); j++)
+					{
+						if (grid[i, j] > 1)
+							score++;
+					}
+				}
+				return score;
+			}
+		}
+
+		public struct Day5VentLine
+		{
+			public Day5VentPoint Point1 { get; set; }
+			public Day5VentPoint Point2 { get; set; }
+
+			public bool IsStraight { get; set; }
+			public bool IsDiagonal { get; set; }
+			public int DiagonalYDiff { get; set; }
+
+			public Day5VentLine(string input)
+			{
+				var cleanInput = input.Replace("->", "");
+				var splitInput = cleanInput.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+				Day5VentPoint firstPoint = new(splitInput[0]);
+				Day5VentPoint secondPoint = new(splitInput[1]);
+
+				if (firstPoint.X == secondPoint.X || firstPoint.Y == secondPoint.Y)
+				{
+					IsStraight = true;
+					IsDiagonal = false;
+					DiagonalYDiff = 0;
+					if (firstPoint.X > secondPoint.X || firstPoint.Y > secondPoint.Y)
+					{
+						Point1 = secondPoint;
+						Point2 = firstPoint;
+					}
+					else
+					{
+						Point1 = firstPoint;
+						Point2 = secondPoint;
+					}
+				}
+				else
+				{
+					IsStraight = false;
+
+					var xDiff = firstPoint.X - secondPoint.X;
+					var yDiff = firstPoint.Y - secondPoint.Y;
+					if (Math.Abs(xDiff) == Math.Abs(yDiff))
+					{
+						IsDiagonal = true;
+						if (firstPoint.X > secondPoint.X)
+						{
+							Point1 = secondPoint;
+							Point2 = firstPoint;
+						}
+						else
+						{
+							Point1 = firstPoint;
+							Point2 = secondPoint;
+						}
+
+						if (Point1.Y > Point2.Y)
+						{
+							DiagonalYDiff = -1;
+						}
+						else
+						{
+							DiagonalYDiff = 1;
+						}
+					}
+					else
+					{
+						IsDiagonal = false;
+						DiagonalYDiff = 0;
+						Point1 = firstPoint;
+						Point2 = secondPoint;
+					}
+				}
+			}
+		}
+
+		public struct Day5VentPoint
+		{
+			public int X { get; set; }
+			public int Y { get; set; }
+
+			public Day5VentPoint(string input)
+			{
+				var splitValues = input.Split(',').Select(x => int.Parse(x)).ToArray();
+				X = splitValues[0];
+				Y = splitValues[1];
+			}
+		}
+
+		private static void SolveDay5()
+		{
+			var input = File.ReadAllLines(@"input\5.txt");
+
+			var sw = new Stopwatch();
+			sw.Start();
+
+			var vents = new Day5HydrothermalVents();
+			foreach (var item in input)
+			{
+				vents.lines.Add(new Day5VentLine(item));
+			}
+
+			//Part 1
+			vents.ProcessStraightLines();
+			var day5Part1Solution = vents.CurrentOverlappingGridScore();
+
+			//Part 2
+			vents.ProcessDiagonalLines();
+			var day5Part2Solution = vents.CurrentOverlappingGridScore();
+
+			sw.Stop();
+			Console.WriteLine($"Day 5, Part 1: {day5Part1Solution}");
+			Console.WriteLine($"Day 5, Part 2: {day5Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
