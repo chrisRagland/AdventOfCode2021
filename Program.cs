@@ -608,25 +608,22 @@ namespace AdventOfCode2021
 
 				for (int j = 0; j < fish.Length; j++)
 				{
-					if (fish[j] > 0)
+					if (j == 0)
 					{
-						if (j == 0)
-						{
-							newSixFish = fish[j];
-							fish[j] = 0;
-						}
-						else
-						{
-							fish[(j - 1)] += fish[j];
-							fish[j] = 0;
-						}
+						newSixFish = fish[j];
+						fish[j] = 0;
+					}
+					else
+					{
+						fish[(j - 1)] = fish[j];
+						fish[j] = 0;
 					}
 				}
 
 				if (newSixFish > 0)
 				{
 					fish[6] += newSixFish;
-					fish[8] += newSixFish;
+					fish[8] = newSixFish;
 				}
 
 				if (i == 79)
