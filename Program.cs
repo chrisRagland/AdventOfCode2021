@@ -18,7 +18,9 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay4();
 			//Console.WriteLine();
-			SolveDay5();
+			//SolveDay5();
+			//Console.WriteLine();
+			SolveDay6();
 		}
 
 		private static void SolveDay1()
@@ -580,6 +582,67 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Day 5, Part 1: {day5Part1Solution}");
 			Console.WriteLine($"Day 5, Part 2: {day5Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		private static void SolveDay6()
+		{
+			var input = File.ReadAllLines(@"input\6.txt");
+			//var input = File.ReadAllLines(@"input\test.txt");
+
+			var sw = new Stopwatch();
+			sw.Start();
+
+			long[] fish = new long[9];
+			var splitValues = input[0].Split(',').Select(x => int.Parse(x));
+			foreach (var item in splitValues)
+			{
+				fish[item]++;
+			}
+
+			long day6Part1Solution = 0;
+			long day6Part2Solution = 0;
+
+			for (int i = 0; i < 256; i++)
+			{
+				long newSixFish = 0;
+
+				for (int j = 0; j < fish.Length; j++)
+				{
+					if (fish[j] > 0)
+					{
+						if (j == 0)
+						{
+							newSixFish = fish[j];
+							fish[j] = 0;
+						}
+						else
+						{
+							fish[(j - 1)] += fish[j];
+							fish[j] = 0;
+						}
+					}
+				}
+
+				if (newSixFish > 0)
+				{
+					fish[6] += newSixFish;
+					fish[8] += newSixFish;
+				}
+
+				if (i == 79)
+				{
+					day6Part1Solution = fish.Sum(x => x);
+				}
+
+			}
+
+			day6Part2Solution = fish.Sum(x => x);
+
+			sw.Stop();
+			Console.WriteLine($"Day 5, Part 1: {day6Part1Solution}");
+			Console.WriteLine($"Day 5, Part 2: {day6Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+
 		}
 	}
 }
