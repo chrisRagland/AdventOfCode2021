@@ -683,42 +683,34 @@ namespace AdventOfCode2021
 			var min = split.Min();
 			var max = split.Max();
 
-			//Part 1
-			Dictionary<int, long> part1Fuel = new();
-			for (int i = min; i <= max; i++)
-			{
-				long thisScore = 0;
-				foreach (var item in split)
-				{
-					thisScore += Math.Abs(item - i);
-				}
-				part1Fuel.Add(i, thisScore);
-			}
-
-			long day7Part1Solution = part1Fuel.Min(x => x.Value);
-
 			//Setup for Part 2
 			Dictionary<int, long> part2Lookup = new();
 			long stepsSoFar = 0;
-			for (int i = 0; i <= (max-min); i++)
+			for (int i = 0; i <= (max - min); i++)
 			{
 				stepsSoFar += i;
 				part2Lookup.Add(i, stepsSoFar);
 			}
 
-			//Part 2
-			Dictionary<int, long> part2Fuel = new();
+			//Part 1 & Part 2
+			List<long> part1Fuel = new();
+			List<long> part2Fuel = new();
 			for (int i = min; i <= max; i++)
 			{
-				long thisScore = 0;
+				long part1Score = 0;
+				long part2Score = 0;
 				foreach (var item in split)
 				{
-					thisScore += part2Lookup[Math.Abs(item - i)];
+					var itemScore = Math.Abs(item - i);
+					part1Score += itemScore;
+					part2Score += part2Lookup[itemScore];
 				}
-				part2Fuel.Add(i, thisScore);
+				part1Fuel.Add(part1Score);
+				part2Fuel.Add(part2Score);
 			}
 
-			long day7Part2Solution = part2Fuel.Min(x => x.Value);
+			long day7Part1Solution = part1Fuel.Min(x => x);
+			long day7Part2Solution = part2Fuel.Min(x => x);
 
 			sw.Stop();
 			Console.WriteLine($"Day 7, Part 1: {day7Part1Solution}");
