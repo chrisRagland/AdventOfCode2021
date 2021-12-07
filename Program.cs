@@ -20,7 +20,49 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay5();
 			//Console.WriteLine();
-			SolveDay6();
+			//SolveDay6();
+
+			SolveDay7();
+
+			/*
+
+			//var input = File.ReadAllLines(@"input\test.txt");
+			var input = File.ReadAllLines(@"input\7.txt");
+
+			var split = input[0].Split(',').Select(x => int.Parse(x));
+			var min = split.Min();
+			var max = split.Max();
+			
+			Dictionary<int, long> scores = new Dictionary<int, long>();
+
+			for (int i = min; i <= max; i++)
+			{
+				long thisScore = 0;
+				foreach (var item in split)
+				{
+					thisScore += Enumerable.Range(1, Math.Abs(item - i)).Sum(x => x);
+				}
+				scores.Add(i, thisScore);
+			}
+
+			var low = scores.Min(x => x.Value);
+			*/
+
+			/*
+
+			for (int i = min; i <= max; i++)
+			{
+				int thisScore = 0;
+				foreach (var item in split)
+				{
+					thisScore += Math.Abs(item - i);
+				}
+				scores.Add(i, thisScore);
+			}
+
+			var low = scores.Min(x => x.Value);
+
+			*/
 		}
 
 		private static void SolveDay1()
@@ -559,6 +601,7 @@ namespace AdventOfCode2021
 
 		private static void SolveDay5()
 		{
+			//Initial Setup
 			var input = File.ReadAllLines(@"input\5.txt");
 
 			var sw = new Stopwatch();
@@ -586,8 +629,8 @@ namespace AdventOfCode2021
 
 		private static void SolveDay6()
 		{
+			//Initial Setup
 			var input = File.ReadAllLines(@"input\6.txt");
-			//var input = File.ReadAllLines(@"input\test.txt");
 
 			var sw = new Stopwatch();
 			sw.Start();
@@ -602,6 +645,7 @@ namespace AdventOfCode2021
 			long day6Part1Solution = 0;
 			long day6Part2Solution = 0;
 
+			//Parts 1 & 2
 			for (int i = 0; i < 256; i++)
 			{
 				long newSixFish = fish[0];
@@ -622,10 +666,64 @@ namespace AdventOfCode2021
 			day6Part2Solution = fish.Sum(x => x);
 
 			sw.Stop();
-			Console.WriteLine($"Day 5, Part 1: {day6Part1Solution}");
-			Console.WriteLine($"Day 5, Part 2: {day6Part2Solution}");
+			Console.WriteLine($"Day 6, Part 1: {day6Part1Solution}");
+			Console.WriteLine($"Day 6, Part 2: {day6Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
 
+		private static void SolveDay7()
+		{
+			//Initial Setup
+			var input = File.ReadAllLines(@"input\7.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			var split = input[0].Split(',').Select(x => int.Parse(x));
+			var min = split.Min();
+			var max = split.Max();
+
+			//Part 1
+			Dictionary<int, long> part1Fuel = new();
+			for (int i = min; i <= max; i++)
+			{
+				long thisScore = 0;
+				foreach (var item in split)
+				{
+					thisScore += Math.Abs(item - i);
+				}
+				part1Fuel.Add(i, thisScore);
+			}
+
+			long day7Part1Solution = part1Fuel.Min(x => x.Value);
+
+			//Setup for Part 2
+			Dictionary<int, long> part2Lookup = new();
+			long stepsSoFar = 0;
+			for (int i = 0; i <= (max-min); i++)
+			{
+				stepsSoFar += i;
+				part2Lookup.Add(i, stepsSoFar);
+			}
+
+			//Part 2
+			Dictionary<int, long> part2Fuel = new();
+			for (int i = min; i <= max; i++)
+			{
+				long thisScore = 0;
+				foreach (var item in split)
+				{
+					thisScore += part2Lookup[Math.Abs(item - i)];
+				}
+				part2Fuel.Add(i, thisScore);
+			}
+
+			long day7Part2Solution = part2Fuel.Min(x => x.Value);
+
+			sw.Stop();
+			Console.WriteLine($"Day 7, Part 1: {day7Part1Solution}");
+			Console.WriteLine($"Day 7, Part 2: {day7Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
 }
