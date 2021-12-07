@@ -683,18 +683,10 @@ namespace AdventOfCode2021
 			var min = split.Min();
 			var max = split.Max();
 
-			//Setup for Part 2
-			Dictionary<int, long> part2Lookup = new();
-			long stepsSoFar = 0;
-			for (int i = 0; i <= (max - min); i++)
-			{
-				stepsSoFar += i;
-				part2Lookup.Add(i, stepsSoFar);
-			}
+			long day7Part1Solution = long.MaxValue;
+			long day7Part2Solution = long.MaxValue;
 
 			//Part 1 & Part 2
-			List<long> part1Fuel = new();
-			List<long> part2Fuel = new();
 			for (int i = min; i <= max; i++)
 			{
 				long part1Score = 0;
@@ -703,14 +695,13 @@ namespace AdventOfCode2021
 				{
 					var itemScore = Math.Abs(item - i);
 					part1Score += itemScore;
-					part2Score += part2Lookup[itemScore];
+					part2Score += (itemScore * (itemScore + 1)) / 2;
 				}
-				part1Fuel.Add(part1Score);
-				part2Fuel.Add(part2Score);
+				if (part1Score < day7Part1Solution)
+					day7Part1Solution = part1Score;
+				if (part2Score < day7Part2Solution)
+					day7Part2Solution = part2Score;
 			}
-
-			long day7Part1Solution = part1Fuel.Min(x => x);
-			long day7Part2Solution = part2Fuel.Min(x => x);
 
 			sw.Stop();
 			Console.WriteLine($"Day 7, Part 1: {day7Part1Solution}");
