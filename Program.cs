@@ -21,48 +21,10 @@ namespace AdventOfCode2021
 			//SolveDay5();
 			//Console.WriteLine();
 			//SolveDay6();
-
-			SolveDay7();
-
-			/*
-
-			//var input = File.ReadAllLines(@"input\test.txt");
-			var input = File.ReadAllLines(@"input\7.txt");
-
-			var split = input[0].Split(',').Select(x => int.Parse(x));
-			var min = split.Min();
-			var max = split.Max();
-			
-			Dictionary<int, long> scores = new Dictionary<int, long>();
-
-			for (int i = min; i <= max; i++)
-			{
-				long thisScore = 0;
-				foreach (var item in split)
-				{
-					thisScore += Enumerable.Range(1, Math.Abs(item - i)).Sum(x => x);
-				}
-				scores.Add(i, thisScore);
-			}
-
-			var low = scores.Min(x => x.Value);
-			*/
-
-			/*
-
-			for (int i = min; i <= max; i++)
-			{
-				int thisScore = 0;
-				foreach (var item in split)
-				{
-					thisScore += Math.Abs(item - i);
-				}
-				scores.Add(i, thisScore);
-			}
-
-			var low = scores.Min(x => x.Value);
-
-			*/
+			//Console.WriteLine();
+			//SolveDay7();
+			//Console.WriteLine();
+			SolveDay8();
 		}
 
 		private static void SolveDay1()
@@ -706,6 +668,83 @@ namespace AdventOfCode2021
 			sw.Stop();
 			Console.WriteLine($"Day 7, Part 1: {day7Part1Solution}");
 			Console.WriteLine($"Day 7, Part 2: {day7Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		private static void SolveDay8()
+		{
+			var input = File.ReadAllLines(@"input\8.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			int day8Part1Solution = 0;
+			int day8Part2Solution = 0;
+
+			foreach (var item in input)
+			{
+				var splitInput = item.Split('|');
+				var tenDigits = splitInput[0].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => String.Concat(x.OrderBy(x => x))).OrderBy(x => x.Length).ToArray();
+				var outputValue = splitInput[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => String.Concat(x.OrderBy(x => x))).ToArray();
+
+				Dictionary<string, int> lookup = new();
+				lookup.Add(tenDigits[0], 1);	//Digit 1 is our two char Digit
+				lookup.Add(tenDigits[1], 7);    //Digit 7 is our three char Digit
+				lookup.Add(tenDigits[2], 4);    //Digit 4 is our four char Digit
+				lookup.Add(tenDigits[9], 8);    //Digit 8 is our nine char Digit
+
+				for (int i = 3; i < 6; i++)
+				{
+					if (tenDigits[2].Intersect(tenDigits[i]).Count() == 2)
+					{
+						lookup.Add(tenDigits[i], 2); //Digit 2 is the only 5 char Digit to contain two parts of Digit 4
+					}
+					else if (tenDigits[0].Intersect(tenDigits[i]).Count() == 2)
+					{
+						lookup.Add(tenDigits[i], 3); //Digit 3 is the only 5 char Digit that contains more than two parts of Digit 4 and both parts of Digit 1
+					}
+					else
+					{
+						lookup.Add(tenDigits[i], 5); //Digit 5 is the only 5 char Digit that doesn't fit either of the above rules
+					}
+				}
+
+				for (int i = 6; i < 9; i++)
+				{
+					if (tenDigits[0].Intersect(tenDigits[i]).Count() != 2)
+					{
+						lookup.Add(tenDigits[i], 6); //Digit 6 is the only 6 char Digit that doesn't contain all of Digit 1
+					}
+					else if (tenDigits[2].Intersect(tenDigits[i]).Count() != 4)
+					{
+						lookup.Add(tenDigits[i], 0); //Digit 0 is the only 6 char Digit that contains all of Digit 1 and doesn't contain all of Digit 4
+					}
+					else
+					{
+						lookup.Add(tenDigits[i], 9); //Digit 9 is the only 6 char Digit that doesn't fit either of the above rules
+					}
+				}
+
+				var powValue = 3;
+				var currentOutput = 0;
+				for (int i = 0; i < outputValue.Length; i++)
+				{
+					//Part 1
+					if (outputValue[i].Length == 2 || outputValue[i].Length == 4 || outputValue[i].Length == 3 || outputValue[i].Length == 7)
+						day8Part1Solution++;
+
+					//Part 2
+					currentOutput += ((int)Math.Pow(10, powValue)) * lookup[outputValue[i]];
+					powValue--;
+				}
+
+				day8Part2Solution += currentOutput;
+
+			}
+
+			sw.Stop();
+			Console.WriteLine($"Day 8, Part 1: {day8Part1Solution}");
+			Console.WriteLine($"Day 8, Part 2: {day8Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
