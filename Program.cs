@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 
@@ -24,7 +25,9 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay7();
 			//Console.WriteLine();
-			SolveDay8();
+			//SolveDay8();
+			//Console.WriteLine();
+			SolveDay9();
 		}
 
 		private static void SolveDay1()
@@ -745,6 +748,142 @@ namespace AdventOfCode2021
 			sw.Stop();
 			Console.WriteLine($"Day 8, Part 1: {day8Part1Solution}");
 			Console.WriteLine($"Day 8, Part 2: {day8Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public struct Day9GridPoint
+		{
+			public int I { get; set; }
+			public int J { get; set; }
+		}
+
+		private static void SolveDay9()
+		{
+			var input = File.ReadAllLines(@"input\9.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			int day9Part1Solution = 0;
+			int day9Part2Solution = 0;
+
+			var maxJ = input[0].Length;
+			var maxI = input.Length;
+			var grid = new int[maxI, maxJ];
+
+			List<Day9GridPoint> LowPoints = new();
+			List<int> basinSizes = new();
+
+			for (int i = 0; i < maxI; i++)
+			{
+				for (int j = 0; j < maxJ; j++)
+				{
+					grid[i, j] = (int)input[i][j] - 48;
+				}
+			}
+
+			//Part 1
+			for (int i = 0; i < maxI; i++)
+			{
+				for (int j = 0; j < maxJ; j++)
+				{
+					//Up
+					if (i - 1 >= 0)
+					{
+						if (grid[i, j] >= grid[(i - 1), j])
+							continue;
+					}
+
+					//Right
+					if (j + 1 < maxJ)
+					{
+						if (grid[i, j] >= grid[i, (j + 1)])
+							continue;
+					}
+
+					//Down
+					if (i + 1 < maxI)
+					{
+						if (grid[i, j] >= grid[(i + 1), j])
+							continue;
+					}
+
+					//Left
+					if (j - 1 >= 0)
+					{
+						if (grid[i, j] >= grid[i, (j - 1)])
+							continue;
+					}
+
+					LowPoints.Add(new Day9GridPoint { I = i, J = j });
+					day9Part1Solution += grid[i, j] + 1;
+
+				}
+			}
+
+			//Part 2
+			foreach (var item in LowPoints)
+			{
+				var thisBasinCount = 0;
+				Queue<Day9GridPoint> nodesToVisit = new();
+				List<Day9GridPoint> nodesVisited = new();
+				nodesToVisit.Enqueue(item);
+				while (nodesToVisit.Count > 0)
+				{
+					thisBasinCount++;
+					var currentNode = nodesToVisit.Dequeue();
+					nodesVisited.Add(currentNode);
+
+					//Up
+					if (currentNode.J - 1 >= 0 && grid[currentNode.I,(currentNode.J-1)] != 9)
+					{
+						Day9GridPoint upPoint = new() { I = currentNode.I, J = (currentNode.J - 1) };
+						if (!nodesToVisit.Contains(upPoint) && !nodesVisited.Contains(upPoint))
+						{
+							nodesToVisit.Enqueue(upPoint);
+						}
+					}
+
+					//Right
+					if (currentNode.I + 1 < maxI && grid[(currentNode.I + 1), currentNode.J] != 9)
+					{
+						Day9GridPoint rightPoint = new() { I = (currentNode.I + 1), J = currentNode.J };
+						if (!nodesToVisit.Contains(rightPoint) && !nodesVisited.Contains(rightPoint))
+						{
+							nodesToVisit.Enqueue(rightPoint);
+						}
+					}
+
+					//Down
+					if (currentNode.J + 1 < maxJ && grid[currentNode.I, (currentNode.J + 1)] != 9)
+					{
+						Day9GridPoint downPoint = new() { I = currentNode.I, J = (currentNode.J + 1) };
+						if (!nodesToVisit.Contains(downPoint) && !nodesVisited.Contains(downPoint))
+						{
+							nodesToVisit.Enqueue(downPoint);
+						}
+					}
+
+					//Left
+					if (currentNode.I - 1 >= 0 && grid[(currentNode.I - 1), currentNode.J] != 9)
+					{
+						Day9GridPoint leftPoint = new() { I = (currentNode.I - 1), J = currentNode.J };
+						if (!nodesToVisit.Contains(leftPoint) && !nodesVisited.Contains(leftPoint))
+						{
+							nodesToVisit.Enqueue(leftPoint);
+						}
+					}
+
+				}
+
+				basinSizes.Add(thisBasinCount);
+			}
+
+			day9Part2Solution = basinSizes.OrderByDescending(x => x).Take(3).Aggregate(1, (x, y) => x * y);
+
+			sw.Stop();
+			Console.WriteLine($"Day 9, Part 1: {day9Part1Solution}");
+			Console.WriteLine($"Day 9, Part 2: {day9Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
