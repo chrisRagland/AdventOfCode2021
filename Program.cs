@@ -895,7 +895,6 @@ namespace AdventOfCode2021
 			Stopwatch sw = new();
 			sw.Start();
 
-			List<Stack<char>> incomplete = new();
 			List<long> incompleteScores = new();
 			int day10Part1Solution = 0;
 
@@ -961,38 +960,34 @@ namespace AdventOfCode2021
 				if (corrupt)
 					continue;
 				else if (chunk.Count > 0)
-					incomplete.Add(chunk);
-
-			}
-
-			//Part 2
-			foreach (var item in incomplete)
-			{
-				long thisScore = 0;
-				while (item.Count > 0)
 				{
-					thisScore *= 5;
-
-					switch (item.Pop())
+					//Part 2
+					long thisScore = 0;
+					while (chunk.Count > 0)
 					{
-						case '(':
-							thisScore += 1;
-							break;
-						case '[':
-							thisScore += 2;
-							break;
-						case '{':
-							thisScore += 3;
-							break;
-						case '<':
-							thisScore += 4;
-							break;
-						default:
-							break;
-					}
-				}
+						thisScore *= 5;
 
-				incompleteScores.Add(thisScore);
+						switch (chunk.Pop())
+						{
+							case '(':
+								thisScore += 1;
+								break;
+							case '[':
+								thisScore += 2;
+								break;
+							case '{':
+								thisScore += 3;
+								break;
+							case '<':
+								thisScore += 4;
+								break;
+							default:
+								break;
+						}
+					}
+
+					incompleteScores.Add(thisScore);
+				}
 
 			}
 
