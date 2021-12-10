@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 
@@ -27,13 +26,15 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay8();
 			//Console.WriteLine();
-			SolveDay9();
+			//SolveDay9();
+			//Console.WriteLine();
+			SolveDay10();
 		}
 
 		private static void SolveDay1()
 		{
 			//Initial Setup
-			int[] input = File.ReadAllLines(@"input\1.txt").Select(x => int.Parse(x)).ToArray();
+			int[] input = File.ReadAllLines(@"input\01.txt").Select(x => int.Parse(x)).ToArray();
 
 			Stopwatch sw = new();
 			sw.Start();
@@ -69,7 +70,7 @@ namespace AdventOfCode2021
 		private static void SolveDay2()
 		{
 			//Initial Setup
-			var input = File.ReadAllLines(@"input\2.txt")
+			var input = File.ReadAllLines(@"input\02.txt")
 				.AsEnumerable()
 				.Select(x => x.Split(' '))
 				.Select(x => new Day2SubCommand() {
@@ -119,7 +120,7 @@ namespace AdventOfCode2021
 		private static void SolveDay3()
 		{
 			//Initial Setup
-			var input = File.ReadAllLines(@"input\3.txt");
+			var input = File.ReadAllLines(@"input\03.txt");
 
 			Stopwatch sw = new();
 			sw.Start();
@@ -303,7 +304,7 @@ namespace AdventOfCode2021
 		private static void SolveDay4()
 		{
 			//Initial Setup
-			var input = File.ReadAllLines(@"input\4.txt");
+			var input = File.ReadAllLines(@"input\04.txt");
 
 			var sw = new Stopwatch();
 			sw.Start();
@@ -567,7 +568,7 @@ namespace AdventOfCode2021
 		private static void SolveDay5()
 		{
 			//Initial Setup
-			var input = File.ReadAllLines(@"input\5.txt");
+			var input = File.ReadAllLines(@"input\05.txt");
 
 			var sw = new Stopwatch();
 			sw.Start();
@@ -595,7 +596,7 @@ namespace AdventOfCode2021
 		private static void SolveDay6()
 		{
 			//Initial Setup
-			var input = File.ReadAllLines(@"input\6.txt");
+			var input = File.ReadAllLines(@"input\06.txt");
 
 			var sw = new Stopwatch();
 			sw.Start();
@@ -639,7 +640,7 @@ namespace AdventOfCode2021
 		private static void SolveDay7()
 		{
 			//Initial Setup
-			var input = File.ReadAllLines(@"input\7.txt");
+			var input = File.ReadAllLines(@"input\07.txt");
 
 			Stopwatch sw = new();
 			sw.Start();
@@ -676,7 +677,7 @@ namespace AdventOfCode2021
 
 		private static void SolveDay8()
 		{
-			var input = File.ReadAllLines(@"input\8.txt");
+			var input = File.ReadAllLines(@"input\08.txt");
 
 			Stopwatch sw = new();
 			sw.Start();
@@ -759,7 +760,7 @@ namespace AdventOfCode2021
 
 		private static void SolveDay9()
 		{
-			var input = File.ReadAllLines(@"input\9.txt");
+			var input = File.ReadAllLines(@"input\09.txt");
 
 			Stopwatch sw = new();
 			sw.Start();
@@ -884,6 +885,123 @@ namespace AdventOfCode2021
 			sw.Stop();
 			Console.WriteLine($"Day 9, Part 1: {day9Part1Solution}");
 			Console.WriteLine($"Day 9, Part 2: {day9Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		private static void SolveDay10()
+		{
+			var input = File.ReadAllLines(@"input\10.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			List<Stack<char>> incomplete = new();
+			List<long> incompleteScores = new();
+			int day10Part1Solution = 0;
+
+			//Part 1
+			foreach (var item in input)
+			{
+				Stack<char> chunk = new();
+				bool corrupt = false;
+
+				for (int i = 0; i < item.Length; i++)
+				{
+					if (item[i] == '(' || item[i] == '[' || item[i] == '{' || item[i] == '<')
+						chunk.Push(item[i]);
+					else
+					{
+						if (item[i] == ')')
+						{
+							if (chunk.Peek() == '(')
+								chunk.Pop();
+							else
+							{
+								corrupt = true;
+								day10Part1Solution += 3;
+							}
+						}
+						if (item[i] == ']')
+						{
+							if (chunk.Peek() == '[')
+								chunk.Pop();
+							else
+							{
+								corrupt = true;
+								day10Part1Solution += 57;
+							}
+						}
+						if (item[i] == '}')
+						{
+							if (chunk.Peek() == '{')
+								chunk.Pop();
+							else
+							{
+								corrupt = true;
+								day10Part1Solution += 1197;
+							}
+						}
+						if (item[i] == '>')
+						{
+							if (chunk.Peek() == '<')
+								chunk.Pop();
+							else
+							{
+								corrupt = true;
+								day10Part1Solution += 25137;
+							}
+						}
+					}
+
+					if (corrupt)
+						break;
+
+				}
+
+				if (corrupt)
+					continue;
+				else if (chunk.Count > 0)
+					incomplete.Add(chunk);
+
+			}
+
+			//Part 2
+			foreach (var item in incomplete)
+			{
+				long thisScore = 0;
+				while (item.Count > 0)
+				{
+					thisScore *= 5;
+
+					switch (item.Pop())
+					{
+						case '(':
+							thisScore += 1;
+							break;
+						case '[':
+							thisScore += 2;
+							break;
+						case '{':
+							thisScore += 3;
+							break;
+						case '<':
+							thisScore += 4;
+							break;
+						default:
+							break;
+					}
+				}
+
+				incompleteScores.Add(thisScore);
+
+			}
+
+			incompleteScores = incompleteScores.OrderBy(x => x).ToList();
+			var middleScoreIndex = incompleteScores.Count / 2;
+
+			sw.Stop();
+			Console.WriteLine($"Day 10, Part 1: {day10Part1Solution}");
+			Console.WriteLine($"Day 10, Part 2: {incompleteScores[middleScoreIndex]}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}

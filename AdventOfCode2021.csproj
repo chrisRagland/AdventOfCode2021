@@ -6,44 +6,48 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="input\1.txt" />
-    <None Remove="input\2.txt" />
-    <None Remove="input\3.txt" />
-    <None Remove="input\4.txt" />
-    <None Remove="input\5.txt" />
-    <None Remove="input\6.txt" />
-    <None Remove="input\7.txt" />
-    <None Remove="input\8.txt" />
-    <None Remove="input\9.txt" />
+    <None Remove="input\01.txt" />
+    <None Remove="input\02.txt" />
+    <None Remove="input\03.txt" />
+    <None Remove="input\04.txt" />
+    <None Remove="input\05.txt" />
+    <None Remove="input\06.txt" />
+    <None Remove="input\07.txt" />
+    <None Remove="input\08.txt" />
+    <None Remove="input\09.txt" />
+    <None Remove="input\10.txt" />
     <None Remove="input\test.txt" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="input\1.txt">
+    <Content Include="input\01.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="input\2.txt">
+    <Content Include="input\10.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="input\3.txt">
+    <Content Include="input\02.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="input\4.txt">
+    <Content Include="input\03.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="input\5.txt">
+    <Content Include="input\04.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="input\6.txt">
+    <Content Include="input\05.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="input\7.txt">
+    <Content Include="input\06.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="input\8.txt">
+    <Content Include="input\07.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="input\9.txt">
+    <Content Include="input\08.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="input\09.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="input\test.txt">
