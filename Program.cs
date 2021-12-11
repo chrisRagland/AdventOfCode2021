@@ -28,7 +28,9 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay9();
 			//Console.WriteLine();
-			SolveDay10();
+			//SolveDay10();
+			//Console.WriteLine();
+			SolveDay11();
 		}
 
 		private static void SolveDay1()
@@ -997,6 +999,187 @@ namespace AdventOfCode2021
 			sw.Stop();
 			Console.WriteLine($"Day 10, Part 1: {day10Part1Solution}");
 			Console.WriteLine($"Day 10, Part 2: {incompleteScores[middleScoreIndex]}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		private struct Day11OctPoint
+		{
+			public int I { get; set; }
+			public int J { get; set; }
+		}
+
+		private static void SolveDay11()
+		{
+			var input = File.ReadAllLines(@"input\11.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+			
+			//Initial Setup
+			int size = 10;
+			int day11Part1Solution = 0;
+			int day11Part2Solution = 0;
+			int flashes = 0;
+			var grid = new int[size, size];
+			for (int i = 0; i < input.Length; i++)
+			{
+				var split = input[i].Select(x => int.Parse(x.ToString())).ToArray();
+				for (int j = 0; j < split.Length; j++)
+				{
+					grid[i, j] = split[j];
+				}
+			}
+
+			//Fudged this since we know which step we find all flashes
+			//Parts 1 & 2
+			for (int s = 1; s <= 1000; s++)
+			{
+				int thisStepFlashes = 0;
+
+				Queue<Day11OctPoint> toFlash = new();
+				List<Day11OctPoint> alreadyFlashed = new();
+
+				for (int i = 0; i < size; i++)
+				{
+					for (int j = 0; j < size; j++)
+					{
+						grid[i, j]++;
+
+						if (grid[i, j] > 9)
+						{
+							toFlash.Enqueue(new Day11OctPoint() { I = i, J = j });
+						}
+					}
+				}
+
+				while (toFlash.Count > 0)
+				{
+					flashes++;
+					thisStepFlashes++;
+					var thisGrid = toFlash.Dequeue();
+					alreadyFlashed.Add(thisGrid);
+
+					//Console.WriteLine($"{thisGrid.I},{thisGrid.J}");
+
+					if (thisGrid.J > 0)
+					{
+						// -1, -1
+						if (thisGrid.I > 0)
+						{
+							var upLeft = new Day11OctPoint { I = thisGrid.I - 1, J = thisGrid.J - 1 };
+							if (!toFlash.Contains(upLeft) && !alreadyFlashed.Contains(upLeft))
+							{
+								grid[upLeft.I, upLeft.J]++;
+								if (grid[upLeft.I, upLeft.J] > 9)
+									toFlash.Enqueue(upLeft);
+							}
+						}
+
+						// 0, -1
+						var up = new Day11OctPoint { I = thisGrid.I, J = thisGrid.J - 1 };
+						if (!toFlash.Contains(up) && !alreadyFlashed.Contains(up))
+						{
+							grid[up.I, up.J]++;
+							if (grid[up.I, up.J] > 9)
+								toFlash.Enqueue(up);
+						}
+
+						// +1, -1
+						if (thisGrid.I < (size - 1))
+						{
+							var upRight = new Day11OctPoint { I = thisGrid.I + 1, J = thisGrid.J - 1 };
+							if (!toFlash.Contains(upRight) && !alreadyFlashed.Contains(upRight))
+							{
+								grid[upRight.I, upRight.J]++;
+								if (grid[upRight.I, upRight.J] > 9)
+									toFlash.Enqueue(upRight);
+							}
+						}
+					}
+
+					// -1, 0
+					if (thisGrid.I > 0)
+					{
+						var left = new Day11OctPoint { I = thisGrid.I - 1, J = thisGrid.J };
+						if (!toFlash.Contains(left) && !alreadyFlashed.Contains(left))
+						{
+							grid[left.I, left.J]++;
+							if (grid[left.I, left.J] > 9)
+								toFlash.Enqueue(left);
+						}
+					}
+
+					// +1, 0
+					if (thisGrid.I < (size - 1))
+					{
+						var right = new Day11OctPoint { I = thisGrid.I + 1, J = thisGrid.J };
+						if (!toFlash.Contains(right) && !alreadyFlashed.Contains(right))
+						{
+							grid[right.I, right.J]++;
+							if (grid[right.I, right.J] > 9)
+								toFlash.Enqueue(right);
+						}
+					}
+
+					if (thisGrid.J < (size - 1))
+					{
+						// -1, +1
+						if (thisGrid.I > 0)
+						{
+							var downLeft = new Day11OctPoint { I = thisGrid.I - 1, J = thisGrid.J + 1 };
+							if (!toFlash.Contains(downLeft) && !alreadyFlashed.Contains(downLeft))
+							{
+								grid[downLeft.I, downLeft.J]++;
+								if (grid[downLeft.I, downLeft.J] > 9)
+									toFlash.Enqueue(downLeft);
+							}
+						}
+
+						// 0, +1
+						var down = new Day11OctPoint { I = thisGrid.I, J = thisGrid.J + 1 };
+						if (!toFlash.Contains(down) && !alreadyFlashed.Contains(down))
+						{
+							grid[down.I, down.J]++;
+							if (grid[down.I, down.J] > 9)
+								toFlash.Enqueue(down);
+						}
+
+						// +1, +1
+						if (thisGrid.I < (size - 1))
+						{
+							var downRight = new Day11OctPoint { I = thisGrid.I + 1, J = thisGrid.J + 1 };
+							if (!toFlash.Contains(downRight) && !alreadyFlashed.Contains(downRight))
+							{
+								grid[downRight.I, downRight.J]++;
+								if (grid[downRight.I, downRight.J] > 9)
+									toFlash.Enqueue(downRight);
+							}
+						}
+					}
+
+				}
+
+				foreach (var item in alreadyFlashed)
+				{
+					grid[item.I, item.J] = 0;
+				}
+
+				if (s == 100)
+				{
+					day11Part1Solution = flashes;
+				}
+
+				if (thisStepFlashes == 100)
+				{
+					day11Part2Solution = s;
+					break;
+				}
+
+			}
+
+			sw.Stop();
+			Console.WriteLine($"Day 11, Part 1: {day11Part1Solution}");
+			Console.WriteLine($"Day 11, Part 2: {day11Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
