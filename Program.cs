@@ -30,10 +30,12 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay10();
 			//Console.WriteLine();
-			SolveDay11();
+			//SolveDay11();
+			//Console.WriteLine();
+			SolveDay12();
 		}
 
-		private static void SolveDay1()
+		public static void SolveDay1()
 		{
 			//Initial Setup
 			int[] input = File.ReadAllLines(@"input\01.txt").Select(x => int.Parse(x)).ToArray();
@@ -69,7 +71,7 @@ namespace AdventOfCode2021
 			public int XValue { get; set; }
 		}
 
-		private static void SolveDay2()
+		public static void SolveDay2()
 		{
 			//Initial Setup
 			var input = File.ReadAllLines(@"input\02.txt")
@@ -119,7 +121,7 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 
-		private static void SolveDay3()
+		public static void SolveDay3()
 		{
 			//Initial Setup
 			var input = File.ReadAllLines(@"input\03.txt");
@@ -303,7 +305,7 @@ namespace AdventOfCode2021
 			}
 		}
 
-		private static void SolveDay4()
+		public static void SolveDay4()
 		{
 			//Initial Setup
 			var input = File.ReadAllLines(@"input\04.txt");
@@ -567,7 +569,7 @@ namespace AdventOfCode2021
 			}
 		}
 
-		private static void SolveDay5()
+		public static void SolveDay5()
 		{
 			//Initial Setup
 			var input = File.ReadAllLines(@"input\05.txt");
@@ -595,7 +597,7 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 
-		private static void SolveDay6()
+		public static void SolveDay6()
 		{
 			//Initial Setup
 			var input = File.ReadAllLines(@"input\06.txt");
@@ -639,7 +641,7 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 
-		private static void SolveDay7()
+		public static void SolveDay7()
 		{
 			//Initial Setup
 			var input = File.ReadAllLines(@"input\07.txt");
@@ -677,7 +679,7 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 
-		private static void SolveDay8()
+		public static void SolveDay8()
 		{
 			var input = File.ReadAllLines(@"input\08.txt");
 
@@ -760,7 +762,7 @@ namespace AdventOfCode2021
 			public int J { get; set; }
 		}
 
-		private static void SolveDay9()
+		public static void SolveDay9()
 		{
 			var input = File.ReadAllLines(@"input\09.txt");
 
@@ -890,7 +892,7 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 
-		private static void SolveDay10()
+		public static void SolveDay10()
 		{
 			var input = File.ReadAllLines(@"input\10.txt");
 
@@ -1002,13 +1004,13 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 
-		private struct Day11OctPoint
+		public struct Day11OctPoint
 		{
 			public int I { get; set; }
 			public int J { get; set; }
 		}
 
-		private static void SolveDay11()
+		public static void SolveDay11()
 		{
 			var input = File.ReadAllLines(@"input\11.txt");
 
@@ -1032,7 +1034,7 @@ namespace AdventOfCode2021
 
 			//Fudged this since we know which step we find all flashes
 			//Parts 1 & 2
-			for (int s = 1; s <= 1000; s++)
+			for (int s = 1; s <= 800; s++)
 			{
 				int thisStepFlashes = 0;
 
@@ -1054,12 +1056,11 @@ namespace AdventOfCode2021
 
 				while (toFlash.Count > 0)
 				{
-					flashes++;
-					thisStepFlashes++;
 					var thisGrid = toFlash.Dequeue();
 					alreadyFlashed.Add(thisGrid);
 
-					//Console.WriteLine($"{thisGrid.I},{thisGrid.J}");
+					flashes++;
+					thisStepFlashes++;
 
 					if (thisGrid.J > 0)
 					{
@@ -1169,7 +1170,7 @@ namespace AdventOfCode2021
 					day11Part1Solution = flashes;
 				}
 
-				if (thisStepFlashes == 100)
+				if (thisStepFlashes == (size * size))
 				{
 					day11Part2Solution = s;
 					break;
@@ -1180,6 +1181,279 @@ namespace AdventOfCode2021
 			sw.Stop();
 			Console.WriteLine($"Day 11, Part 1: {day11Part1Solution}");
 			Console.WriteLine($"Day 11, Part 2: {day11Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public struct Day12PathElement
+		{
+			public int Value { get; set; }
+			public bool IsSmall { get; set; }
+
+			public Day12PathElement(string input)
+			{
+				Value = Day12GetInputIntValue(input);
+
+				if (Value > 0)
+					IsSmall = char.IsLower(input[0]);
+				else
+					IsSmall = false;
+			}
+		}
+
+		public struct Day12PathParts
+		{
+			public Day12PathElement Left { get; set; }
+			public Day12PathElement Right { get; set; }
+
+			public Day12PathParts(string[] input)
+			{
+				Left = new Day12PathElement(input[0]);
+				Right = new Day12PathElement(input[1]);
+			}
+		}
+
+		public static int Day12GetInputIntValue(string input)
+		{
+			if (input == "start")
+				return 0;
+			else if (input == "end")
+				return -1;
+			else
+				return int.Parse(string.Join("", input.ToCharArray().Select(x => (int)x)));
+		}
+
+		public struct Day12Part2Paths
+		{
+			public List<int> Path;
+			public bool SmallCaveVisitedTwice { get; set; }
+		}
+
+		public static void SolveDay12()
+		{
+			var input = File.ReadAllLines(@"input\12.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			int day12Part1Solution = 0;
+			int day12Part2Solution = 0;
+
+			List<Day12PathParts> paths = new();
+			List<string> elements = new();
+
+			foreach (var item in input)
+			{
+				var splitInput = item.Split('-');
+				paths.Add(new Day12PathParts(splitInput));
+				elements.AddRange(splitInput);
+			}
+
+			//For Output Uses Only
+			Dictionary<int, string> outputLookup = elements.Distinct().ToDictionary(x => Day12GetInputIntValue(x), x => x);
+
+			Stack<List<int>> part1PathsToTravel = new();
+			List<List<int>> part1PathsTraveled = new();
+
+			Stack<Day12Part2Paths> part2PathsToTravel = new();
+			List<List<int>> part2PathsTraveled = new();
+
+			var startingLeft = paths.Where(x => x.Left.Value.Equals(0));
+			foreach (var startingPoint in startingLeft)
+			{
+				part1PathsToTravel.Push(new List<int>() { startingPoint.Left.Value, startingPoint.Right.Value });
+				part2PathsToTravel.Push(new Day12Part2Paths() { Path = new List<int>() { startingPoint.Left.Value, startingPoint.Right.Value }, SmallCaveVisitedTwice = false });
+			}
+
+			var startingRight = paths.Where(x => x.Right.Value.Equals(0));
+			foreach (var startingPoint in startingRight)
+			{
+				part1PathsToTravel.Push(new List<int>() { startingPoint.Right.Value, startingPoint.Left.Value });
+				part2PathsToTravel.Push(new Day12Part2Paths() { Path = new List<int>() { startingPoint.Right.Value, startingPoint.Left.Value }, SmallCaveVisitedTwice = false });
+			}
+
+			//Part 1
+			while (part1PathsToTravel.Count > 0)
+			{
+				var thisPath = part1PathsToTravel.Pop();
+				var lastVisitedElement = thisPath.Last();
+
+				var leftBranches = paths.Where(x => x.Left.Value.Equals(lastVisitedElement));
+				foreach (var branch in leftBranches)
+				{
+					if (branch.Right.Value.Equals(0))
+						continue;
+					else if (branch.Right.Value.Equals(-1))
+					{
+						var newSolution = new List<int>(thisPath);
+						newSolution.Add(-1);
+						part1PathsTraveled.Add(newSolution);
+					}
+					else
+					{
+						if (branch.Right.IsSmall)
+						{
+							if (!thisPath.Contains(branch.Right.Value))
+							{
+								var newSolution = new List<int>(thisPath);
+								newSolution.Add(branch.Right.Value);
+								part1PathsToTravel.Push(newSolution);
+							}
+						}
+						else
+						{
+							var newSolution = new List<int>(thisPath);
+							newSolution.Add(branch.Right.Value);
+							part1PathsToTravel.Push(newSolution);
+						}
+					}
+				}
+
+				var rightBranches = paths.Where(x => x.Right.Value.Equals(lastVisitedElement));
+				foreach (var branch in rightBranches)
+				{
+					if (branch.Left.Value.Equals(0))
+						continue;
+					else if (branch.Left.Value.Equals(-1))
+					{
+						var newSolution = new List<int>(thisPath);
+						newSolution.Add(-1);
+						part1PathsTraveled.Add(newSolution);
+					}
+					else
+					{
+						if (branch.Left.IsSmall)
+						{
+							if (!thisPath.Contains(branch.Left.Value))
+							{
+								var newSolution = new List<int>(thisPath);
+								newSolution.Add(branch.Left.Value);
+								part1PathsToTravel.Push(newSolution);
+							}
+						}
+						else
+						{
+							var newSolution = new List<int>(thisPath);
+							newSolution.Add(branch.Left.Value);
+							part1PathsToTravel.Push(newSolution);
+						}
+					}
+				}
+
+			}
+
+			day12Part1Solution = part1PathsTraveled.Count;
+
+			//Part 2
+			while (part2PathsToTravel.Count > 0)
+			{
+				var thisPath = part2PathsToTravel.Pop();
+				var lastVisitedElement = thisPath.Path.Last();
+
+				var leftBranches = paths.Where(x => x.Left.Value.Equals(lastVisitedElement));
+				foreach (var branch in leftBranches)
+				{
+					if (branch.Right.Value.Equals(0))
+						continue;
+					else if (branch.Right.Value.Equals(-1))
+					{
+						var newSolution = new List<int>(thisPath.Path);
+						newSolution.Add(-1);
+						part2PathsTraveled.Add(newSolution);
+					}
+					else
+					{
+						if (branch.Right.IsSmall)
+						{
+							if (!thisPath.SmallCaveVisitedTwice)
+							{
+								if (thisPath.Path.Count(x => x.Equals(branch.Right.Value)) == 0)
+								{
+									var newSolution = new List<int>(thisPath.Path);
+									newSolution.Add(branch.Right.Value);
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+								}
+								else if (thisPath.Path.Count(x => x.Equals(branch.Right.Value)) == 1)
+								{
+									var newSolution = new List<int>(thisPath.Path);
+									newSolution.Add(branch.Right.Value);
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = true });
+								}
+							}
+							else
+							{
+								if (!thisPath.Path.Contains(branch.Right.Value))
+								{
+									var newSolution = new List<int>(thisPath.Path);
+									newSolution.Add(branch.Right.Value);
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+								}
+							}
+						}
+						else
+						{
+							var newSolution = new List<int>(thisPath.Path);
+							newSolution.Add(branch.Right.Value);
+							part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+						}
+					}
+				}
+
+				var rightBranches = paths.Where(x => x.Right.Value.Equals(lastVisitedElement));
+				foreach (var branch in rightBranches)
+				{
+					if (branch.Left.Value.Equals(0))
+						continue;
+					else if (branch.Left.Value.Equals(-1))
+					{
+						var newSolution = new List<int>(thisPath.Path);
+						newSolution.Add(-1);
+						part2PathsTraveled.Add(newSolution);
+					}
+					else
+					{
+						if (branch.Left.IsSmall)
+						{
+							if (!thisPath.SmallCaveVisitedTwice)
+							{
+								if (thisPath.Path.Count(x => x.Equals(branch.Left.Value)) == 0)
+								{
+									var newSolution = new List<int>(thisPath.Path);
+									newSolution.Add(branch.Left.Value);
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+								}
+								else if (thisPath.Path.Count(x => x.Equals(branch.Left.Value)) == 1)
+								{
+									var newSolution = new List<int>(thisPath.Path);
+									newSolution.Add(branch.Left.Value);
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = true });
+								}
+							}
+							else
+							{
+								if (!thisPath.Path.Contains(branch.Left.Value))
+								{
+									var newSolution = new List<int>(thisPath.Path);
+									newSolution.Add(branch.Left.Value);
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+								}
+							}
+						}
+						else
+						{
+							var newSolution = new List<int>(thisPath.Path);
+							newSolution.Add(branch.Left.Value);
+							part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+						}
+					}
+				}
+
+			}
+
+			day12Part2Solution = part2PathsTraveled.Count;
+
+			sw.Stop();
+			Console.WriteLine($"Day 12, Part 1: {day12Part1Solution}");
+			Console.WriteLine($"Day 12, Part 2: {day12Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
