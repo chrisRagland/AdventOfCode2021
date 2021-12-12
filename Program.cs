@@ -1222,9 +1222,15 @@ namespace AdventOfCode2021
 				return int.Parse(string.Join("", input.ToCharArray().Select(x => (int)x)));
 		}
 
+		public struct Day12Paths
+		{
+			public int[] SmallCavesVisited { get; set; }
+			public int LastCaveVisited { get; set; }
+		}
+
 		public struct Day12Part2Paths
 		{
-			public List<int> Path;
+			public Day12Paths Path;
 			public bool SmallCaveVisitedTwice { get; set; }
 		}
 
@@ -1239,217 +1245,191 @@ namespace AdventOfCode2021
 			int day12Part2Solution = 0;
 
 			List<Day12PathParts> paths = new();
-			List<string> elements = new();
+			List<int> smallCaves = new();
 
 			foreach (var item in input)
 			{
 				var splitInput = item.Split('-');
-				paths.Add(new Day12PathParts(splitInput));
-				elements.AddRange(splitInput);
+				var pathToAdd = new Day12PathParts(splitInput);
+				paths.Add(pathToAdd);
+				if (pathToAdd.Left.IsSmall && !smallCaves.Contains(pathToAdd.Left.Value))
+					smallCaves.Add(pathToAdd.Left.Value);
+				if (pathToAdd.Right.IsSmall && !smallCaves.Contains(pathToAdd.Right.Value))
+					smallCaves.Add(pathToAdd.Right.Value);
 			}
 
-			//For Output Uses Only
-			Dictionary<int, string> outputLookup = elements.Distinct().ToDictionary(x => Day12GetInputIntValue(x), x => x);
-
-			Stack<List<int>> part1PathsToTravel = new();
-			List<List<int>> part1PathsTraveled = new();
-
+			Stack<Day12Paths> part1PathsToTravel = new();
 			Stack<Day12Part2Paths> part2PathsToTravel = new();
-			List<List<int>> part2PathsTraveled = new();
 
 			var startingLeft = paths.Where(x => x.Left.Value.Equals(0));
 			foreach (var startingPoint in startingLeft)
 			{
-				part1PathsToTravel.Push(new List<int>() { startingPoint.Left.Value, startingPoint.Right.Value });
-				part2PathsToTravel.Push(new Day12Part2Paths() { Path = new List<int>() { startingPoint.Left.Value, startingPoint.Right.Value }, SmallCaveVisitedTwice = false });
+				var smallCaveVisited = new int[smallCaves.Count];
+				if (startingPoint.Right.IsSmall)
+					smallCaveVisited[0] = startingPoint.Right.Value;
+
+				var path = new Day12Paths() { SmallCavesVisited = smallCaveVisited, LastCaveVisited = startingPoint.Right.Value };
+				part1PathsToTravel.Push(path);
+				part2PathsToTravel.Push(new Day12Part2Paths() { Path = path, SmallCaveVisitedTwice = false });
 			}
 
 			var startingRight = paths.Where(x => x.Right.Value.Equals(0));
 			foreach (var startingPoint in startingRight)
 			{
-				part1PathsToTravel.Push(new List<int>() { startingPoint.Right.Value, startingPoint.Left.Value });
-				part2PathsToTravel.Push(new Day12Part2Paths() { Path = new List<int>() { startingPoint.Right.Value, startingPoint.Left.Value }, SmallCaveVisitedTwice = false });
+				var smallCaveVisited = new int[smallCaves.Count];
+				if (startingPoint.Left.IsSmall)
+					smallCaveVisited[0] = startingPoint.Left.Value;
+
+				var path = new Day12Paths() { SmallCavesVisited = smallCaveVisited, LastCaveVisited = startingPoint.Left.Value };
+				part1PathsToTravel.Push(path);
+				part2PathsToTravel.Push(new Day12Part2Paths() { Path = path, SmallCaveVisitedTwice = false });
 			}
 
 			//Part 1
 			while (part1PathsToTravel.Count > 0)
 			{
 				var thisPath = part1PathsToTravel.Pop();
-				var lastVisitedElement = thisPath.Last();
 
-				var leftBranches = paths.Where(x => x.Left.Value.Equals(lastVisitedElement));
+				var leftBranches = paths.Where(x => x.Left.Value.Equals(thisPath.LastCaveVisited));
 				foreach (var branch in leftBranches)
 				{
 					if (branch.Right.Value.Equals(0))
 						continue;
 					else if (branch.Right.Value.Equals(-1))
-					{
-						var newSolution = new List<int>(thisPath);
-						newSolution.Add(-1);
-						part1PathsTraveled.Add(newSolution);
-					}
+						day12Part1Solution++;
 					else
 					{
 						if (branch.Right.IsSmall)
 						{
-							if (!thisPath.Contains(branch.Right.Value))
+							if (!thisPath.SmallCavesVisited.Contains(branch.Right.Value))
 							{
-								var newSolution = new List<int>(thisPath);
-								newSolution.Add(branch.Right.Value);
-								part1PathsToTravel.Push(newSolution);
+								var newSmallCavesVisited = (int[])thisPath.SmallCavesVisited.Clone();
+								newSmallCavesVisited[Array.IndexOf(thisPath.SmallCavesVisited, 0)] = branch.Right.Value;
+								part1PathsToTravel.Push(new Day12Paths() { SmallCavesVisited = newSmallCavesVisited, LastCaveVisited = branch.Right.Value });
 							}
 						}
 						else
 						{
-							var newSolution = new List<int>(thisPath);
-							newSolution.Add(branch.Right.Value);
-							part1PathsToTravel.Push(newSolution);
+							part1PathsToTravel.Push(new Day12Paths() { SmallCavesVisited = thisPath.SmallCavesVisited, LastCaveVisited = branch.Right.Value });
 						}
 					}
 				}
 
-				var rightBranches = paths.Where(x => x.Right.Value.Equals(lastVisitedElement));
+				var rightBranches = paths.Where(x => x.Right.Value.Equals(thisPath.LastCaveVisited));
 				foreach (var branch in rightBranches)
 				{
 					if (branch.Left.Value.Equals(0))
 						continue;
 					else if (branch.Left.Value.Equals(-1))
-					{
-						var newSolution = new List<int>(thisPath);
-						newSolution.Add(-1);
-						part1PathsTraveled.Add(newSolution);
-					}
+						day12Part1Solution++;
 					else
 					{
 						if (branch.Left.IsSmall)
 						{
-							if (!thisPath.Contains(branch.Left.Value))
+							if (!thisPath.SmallCavesVisited.Contains(branch.Left.Value))
 							{
-								var newSolution = new List<int>(thisPath);
-								newSolution.Add(branch.Left.Value);
-								part1PathsToTravel.Push(newSolution);
+								var newSmallCavesVisited = (int[])thisPath.SmallCavesVisited.Clone();
+								newSmallCavesVisited[Array.IndexOf(thisPath.SmallCavesVisited, 0)] = branch.Left.Value;
+								part1PathsToTravel.Push(new Day12Paths() { SmallCavesVisited = newSmallCavesVisited, LastCaveVisited = branch.Left.Value });
 							}
 						}
 						else
 						{
-							var newSolution = new List<int>(thisPath);
-							newSolution.Add(branch.Left.Value);
-							part1PathsToTravel.Push(newSolution);
+							part1PathsToTravel.Push(new Day12Paths() { SmallCavesVisited = thisPath.SmallCavesVisited, LastCaveVisited = branch.Left.Value });
 						}
 					}
 				}
 
 			}
-
-			day12Part1Solution = part1PathsTraveled.Count;
 
 			//Part 2
 			while (part2PathsToTravel.Count > 0)
 			{
 				var thisPath = part2PathsToTravel.Pop();
-				var lastVisitedElement = thisPath.Path.Last();
 
-				var leftBranches = paths.Where(x => x.Left.Value.Equals(lastVisitedElement));
+				var leftBranches = paths.Where(x => x.Left.Value.Equals(thisPath.Path.LastCaveVisited));
 				foreach (var branch in leftBranches)
 				{
 					if (branch.Right.Value.Equals(0))
 						continue;
 					else if (branch.Right.Value.Equals(-1))
-					{
-						var newSolution = new List<int>(thisPath.Path);
-						newSolution.Add(-1);
-						part2PathsTraveled.Add(newSolution);
-					}
+						day12Part2Solution++;
 					else
 					{
 						if (branch.Right.IsSmall)
 						{
 							if (!thisPath.SmallCaveVisitedTwice)
 							{
-								if (thisPath.Path.Count(x => x.Equals(branch.Right.Value)) == 0)
+								if (thisPath.Path.SmallCavesVisited.Count(x => x.Equals(branch.Right.Value)) == 0)
 								{
-									var newSolution = new List<int>(thisPath.Path);
-									newSolution.Add(branch.Right.Value);
-									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+									var newSmallCavesVisited = (int[])thisPath.Path.SmallCavesVisited.Clone();
+									newSmallCavesVisited[Array.IndexOf(thisPath.Path.SmallCavesVisited, 0)] = branch.Right.Value;
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = new Day12Paths() { SmallCavesVisited = newSmallCavesVisited, LastCaveVisited = branch.Right.Value }, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
 								}
-								else if (thisPath.Path.Count(x => x.Equals(branch.Right.Value)) == 1)
+								else if (thisPath.Path.SmallCavesVisited.Count(x => x.Equals(branch.Right.Value)) == 1)
 								{
-									var newSolution = new List<int>(thisPath.Path);
-									newSolution.Add(branch.Right.Value);
-									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = true });
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = new Day12Paths() { SmallCavesVisited = thisPath.Path.SmallCavesVisited, LastCaveVisited = branch.Right.Value }, SmallCaveVisitedTwice = true });
 								}
 							}
 							else
 							{
-								if (!thisPath.Path.Contains(branch.Right.Value))
+								if (!thisPath.Path.SmallCavesVisited.Contains(branch.Right.Value))
 								{
-									var newSolution = new List<int>(thisPath.Path);
-									newSolution.Add(branch.Right.Value);
-									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+									var newSmallCavesVisited = (int[])thisPath.Path.SmallCavesVisited.Clone();
+									newSmallCavesVisited[Array.IndexOf(thisPath.Path.SmallCavesVisited, 0)] = branch.Right.Value;
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = new Day12Paths() { SmallCavesVisited = newSmallCavesVisited, LastCaveVisited = branch.Right.Value }, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
 								}
 							}
 						}
 						else
 						{
-							var newSolution = new List<int>(thisPath.Path);
-							newSolution.Add(branch.Right.Value);
-							part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+							part2PathsToTravel.Push(new Day12Part2Paths() { Path = new Day12Paths() { SmallCavesVisited = thisPath.Path.SmallCavesVisited, LastCaveVisited = branch.Right.Value }, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
 						}
 					}
 				}
 
-				var rightBranches = paths.Where(x => x.Right.Value.Equals(lastVisitedElement));
+				var rightBranches = paths.Where(x => x.Right.Value.Equals(thisPath.Path.LastCaveVisited));
 				foreach (var branch in rightBranches)
 				{
 					if (branch.Left.Value.Equals(0))
 						continue;
 					else if (branch.Left.Value.Equals(-1))
-					{
-						var newSolution = new List<int>(thisPath.Path);
-						newSolution.Add(-1);
-						part2PathsTraveled.Add(newSolution);
-					}
+						day12Part2Solution++;
 					else
 					{
 						if (branch.Left.IsSmall)
 						{
 							if (!thisPath.SmallCaveVisitedTwice)
 							{
-								if (thisPath.Path.Count(x => x.Equals(branch.Left.Value)) == 0)
+								if (thisPath.Path.SmallCavesVisited.Count(x => x.Equals(branch.Left.Value)) == 0)
 								{
-									var newSolution = new List<int>(thisPath.Path);
-									newSolution.Add(branch.Left.Value);
-									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+									var newSmallCavesVisited = (int[])thisPath.Path.SmallCavesVisited.Clone();
+									newSmallCavesVisited[Array.IndexOf(thisPath.Path.SmallCavesVisited, 0)] = branch.Left.Value;
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = new Day12Paths() { SmallCavesVisited = newSmallCavesVisited, LastCaveVisited = branch.Left.Value }, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
 								}
-								else if (thisPath.Path.Count(x => x.Equals(branch.Left.Value)) == 1)
+								else if (thisPath.Path.SmallCavesVisited.Count(x => x.Equals(branch.Left.Value)) == 1)
 								{
-									var newSolution = new List<int>(thisPath.Path);
-									newSolution.Add(branch.Left.Value);
-									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = true });
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = new Day12Paths() { SmallCavesVisited = thisPath.Path.SmallCavesVisited, LastCaveVisited = branch.Left.Value }, SmallCaveVisitedTwice = true });
 								}
 							}
 							else
 							{
-								if (!thisPath.Path.Contains(branch.Left.Value))
+								if (!thisPath.Path.SmallCavesVisited.Contains(branch.Left.Value))
 								{
-									var newSolution = new List<int>(thisPath.Path);
-									newSolution.Add(branch.Left.Value);
-									part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+									var newSmallCavesVisited = (int[])thisPath.Path.SmallCavesVisited.Clone();
+									newSmallCavesVisited[Array.IndexOf(thisPath.Path.SmallCavesVisited, 0)] = branch.Left.Value;
+									part2PathsToTravel.Push(new Day12Part2Paths() { Path = new Day12Paths() { SmallCavesVisited = newSmallCavesVisited, LastCaveVisited = branch.Left.Value }, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
 								}
 							}
 						}
 						else
 						{
-							var newSolution = new List<int>(thisPath.Path);
-							newSolution.Add(branch.Left.Value);
-							part2PathsToTravel.Push(new Day12Part2Paths() { Path = newSolution, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
+							part2PathsToTravel.Push(new Day12Part2Paths() { Path = new Day12Paths() { SmallCavesVisited = thisPath.Path.SmallCavesVisited, LastCaveVisited = branch.Left.Value }, SmallCaveVisitedTwice = thisPath.SmallCaveVisitedTwice });
 						}
 					}
 				}
 
 			}
-
-			day12Part2Solution = part2PathsTraveled.Count;
 
 			sw.Stop();
 			Console.WriteLine($"Day 12, Part 1: {day12Part1Solution}");
