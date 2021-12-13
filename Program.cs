@@ -1446,20 +1446,11 @@ namespace AdventOfCode2021
 			Stopwatch sw = new();
 			sw.Start();
 
-			var yMax = 0;
-			var xMax = 0;
-
 			var dots = input.Where(x => !x.StartsWith("fold") && x.Length > 0).Select(x => x.Split(',').Select(x => int.Parse(x)).ToArray());
 			var commands = input.Where(x => x.StartsWith("fold")).ToArray();
 
-			foreach (var item in dots)
-			{
-				if (item[0] > xMax)
-					xMax = item[0];
-
-				if (item[1] > yMax)
-					yMax = item[1];
-			}
+			var yMax = dots.Select(x => x[1]).Max();
+			var xMax = dots.Select(x => x[0]).Max();
 
 			var grid = new bool[(yMax + 1), (xMax + 1)];
 			foreach (var item in dots)
