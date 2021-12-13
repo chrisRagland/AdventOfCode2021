@@ -32,7 +32,9 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay11();
 			//Console.WriteLine();
-			SolveDay12();
+			//SolveDay12();
+			//Console.WriteLine();
+			SolveDay13();
 		}
 
 		public static void SolveDay1()
@@ -1434,6 +1436,110 @@ namespace AdventOfCode2021
 			sw.Stop();
 			Console.WriteLine($"Day 12, Part 1: {day12Part1Solution}");
 			Console.WriteLine($"Day 12, Part 2: {day12Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public static void SolveDay13()
+		{
+			var input = File.ReadAllLines(@"input\13.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			var yMax = 0;
+			var xMax = 0;
+
+			var dots = input.Where(x => !x.StartsWith("fold") && x.Length > 0).Select(x => x.Split(',').Select(x => int.Parse(x)).ToArray());
+			var commands = input.Where(x => x.StartsWith("fold")).ToArray();
+
+			foreach (var item in dots)
+			{
+				if (item[0] > xMax)
+					xMax = item[0];
+
+				if (item[1] > yMax)
+					yMax = item[1];
+			}
+
+			var grid = new bool[(yMax + 1), (xMax + 1)];
+			foreach (var item in dots)
+			{
+				grid[item[1], item[0]] = true;
+			}
+			var currentGrid = (bool[,])grid.Clone();
+
+			int day13Part1Solution = 0;
+
+			for (int c = 0; c < commands.Length; c++)
+			{
+				var command = commands[c].Split(' ', StringSplitOptions.RemoveEmptyEntries).Last();
+				var splitCommand = command.Split('=');
+				var splitCommandValue = int.Parse(splitCommand[1]);
+
+				switch (splitCommand[0])
+				{
+					case "y":
+						{
+							var newGrid = new bool[splitCommandValue,currentGrid.GetLength(1)];
+							for (int i = 0; i < splitCommandValue; i++)
+							{
+								for (int j = 0; j < currentGrid.GetLength(1); j++)
+								{
+									newGrid[i, j] = currentGrid[i, j] | currentGrid[currentGrid.GetLength(0) - i - 1, j];
+								}
+							}
+							currentGrid = newGrid;
+						}
+						break;
+					case "x":
+						{
+							var newGrid = new bool[currentGrid.GetLength(0), splitCommandValue];
+							for (int i = 0; i < currentGrid.GetLength(0); i++)
+							{
+								for (int j = 0; j < splitCommandValue; j++)
+								{
+									newGrid[i, j] = currentGrid[i, j] | currentGrid[i, currentGrid.GetLength(1) - j - 1];
+								}
+							}
+							currentGrid = newGrid;
+						}
+						break;
+					default:
+						break;
+				}
+
+				//Part 1
+				if (c == 0)
+				{
+					for (int i = 0; i < currentGrid.GetLength(0); i++)
+					{
+						for (int j = 0; j < currentGrid.GetLength(1); j++)
+						{
+							if (currentGrid[i, j])
+								day13Part1Solution++;
+						}
+					}
+				}
+			}
+
+			sw.Stop();
+			Console.WriteLine($"Day 13, Part 1: {day13Part1Solution}");
+			Console.WriteLine($"Day 13, Part 2:");
+
+			Console.WriteLine();
+			for (int i = 0; i < currentGrid.GetLength(0); i++)
+			{
+				for (int j = 0; j < currentGrid.GetLength(1); j++)
+				{
+					if (currentGrid[i, j])
+						Console.Write("#");
+					else
+						Console.Write(" ");
+				}
+				Console.WriteLine();
+			}
+			Console.WriteLine();
+
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
