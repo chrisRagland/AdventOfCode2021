@@ -34,7 +34,9 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay12();
 			//Console.WriteLine();
-			SolveDay13();
+			//SolveDay13();
+			//Console.WriteLine();
+			SolveDay14();
 		}
 
 		public static void SolveDay1()
@@ -1457,7 +1459,6 @@ namespace AdventOfCode2021
 			{
 				grid[item[1], item[0]] = true;
 			}
-			var currentGrid = (bool[,])grid.Clone();
 
 			int day13Part1Solution = 0;
 
@@ -1471,28 +1472,28 @@ namespace AdventOfCode2021
 				{
 					case "y":
 						{
-							var newGrid = new bool[splitCommandValue,currentGrid.GetLength(1)];
+							var newGrid = new bool[splitCommandValue, grid.GetLength(1)];
 							for (int i = 0; i < splitCommandValue; i++)
 							{
-								for (int j = 0; j < currentGrid.GetLength(1); j++)
+								for (int j = 0; j < grid.GetLength(1); j++)
 								{
-									newGrid[i, j] = currentGrid[i, j] | currentGrid[currentGrid.GetLength(0) - i - 1, j];
+									newGrid[i, j] = grid[i, j] | grid[grid.GetLength(0) - i - 1, j];
 								}
 							}
-							currentGrid = newGrid;
+							grid = newGrid;
 						}
 						break;
 					case "x":
 						{
-							var newGrid = new bool[currentGrid.GetLength(0), splitCommandValue];
-							for (int i = 0; i < currentGrid.GetLength(0); i++)
+							var newGrid = new bool[grid.GetLength(0), splitCommandValue];
+							for (int i = 0; i < grid.GetLength(0); i++)
 							{
 								for (int j = 0; j < splitCommandValue; j++)
 								{
-									newGrid[i, j] = currentGrid[i, j] | currentGrid[i, currentGrid.GetLength(1) - j - 1];
+									newGrid[i, j] = grid[i, j] | grid[i, grid.GetLength(1) - j - 1];
 								}
 							}
-							currentGrid = newGrid;
+							grid = newGrid;
 						}
 						break;
 					default:
@@ -1502,11 +1503,11 @@ namespace AdventOfCode2021
 				//Part 1
 				if (c == 0)
 				{
-					for (int i = 0; i < currentGrid.GetLength(0); i++)
+					for (int i = 0; i < grid.GetLength(0); i++)
 					{
-						for (int j = 0; j < currentGrid.GetLength(1); j++)
+						for (int j = 0; j < grid.GetLength(1); j++)
 						{
-							if (currentGrid[i, j])
+							if (grid[i, j])
 								day13Part1Solution++;
 						}
 					}
@@ -1518,11 +1519,11 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Day 13, Part 2:");
 
 			Console.WriteLine();
-			for (int i = 0; i < currentGrid.GetLength(0); i++)
+			for (int i = 0; i < grid.GetLength(0); i++)
 			{
-				for (int j = 0; j < currentGrid.GetLength(1); j++)
+				for (int j = 0; j < grid.GetLength(1); j++)
 				{
-					if (currentGrid[i, j])
+					if (grid[i, j])
 						Console.Write("#");
 					else
 						Console.Write(" ");
@@ -1531,6 +1532,74 @@ namespace AdventOfCode2021
 			}
 			Console.WriteLine();
 
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public static void SolveDay14()
+		{
+			var input = File.ReadAllLines(@"input\14.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			var template = input[0];
+			var pairInsertion = input.Skip(2).Select(x => x.Split(" -> ")).ToDictionary(x => x[0], x => x[1]);
+
+			Dictionary<string, long> pairCounts = new();
+			for (int i = 0; i < template.Length - 1; i++)
+			{
+				var key = template.Substring(i, 2);
+				if (pairCounts.ContainsKey(key))
+					pairCounts[key]++;
+				else
+					pairCounts.Add(key, 1);
+			}
+
+			long day14Part1Solution = 0;
+			long day14Part2Solution = 0;
+
+			//Parts 1 & 2
+			for (int i = 0; i < 40; i++)
+			{
+				Dictionary<string, long> tempPairCounts = new();
+				foreach (var item in pairCounts)
+				{
+					var leftSide = item.Key[0] + pairInsertion[item.Key];
+					if (tempPairCounts.ContainsKey(leftSide))
+						tempPairCounts[leftSide] += item.Value;
+					else
+						tempPairCounts.Add(leftSide, item.Value);
+
+					var rightSide = pairInsertion[item.Key] + item.Key[1];
+					if (tempPairCounts.ContainsKey(rightSide))
+						tempPairCounts[rightSide] += item.Value;
+					else
+						tempPairCounts.Add(rightSide, item.Value);
+				}
+				pairCounts = tempPairCounts;
+
+				if (i == 9)
+				{
+					var part1ElementCount = pairCounts.Select(x => new { Element = x.Key[0], Count = x.Value }).GroupBy(x => x.Element).ToDictionary(x => x.Key, x => x.Sum(x => x.Count));
+
+					//Last element never matches any pairs but needs to be counted
+					part1ElementCount[template.Last()]++;
+
+					day14Part1Solution = part1ElementCount.Values.Max() - part1ElementCount.Values.Min();
+				}
+
+			}
+
+			var part2ElementCount = pairCounts.Select(x => new { Element = x.Key[0], Count = x.Value }).GroupBy(x => x.Element).ToDictionary(x => x.Key, x => x.Sum(x => x.Count));
+
+			//Last element never matches any pairs but needs to be counted
+			part2ElementCount[template.Last()]++;
+
+			day14Part2Solution = part2ElementCount.Values.Max() - part2ElementCount.Values.Min();
+
+			sw.Stop();
+			Console.WriteLine($"Day 14, Part 1: {day14Part1Solution}");
+			Console.WriteLine($"Day 14, Part 2: {day14Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
