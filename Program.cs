@@ -36,7 +36,9 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay13();
 			//Console.WriteLine();
-			SolveDay14();
+			//SolveDay14();
+			//Console.WriteLine();
+			SolveDay15();
 		}
 
 		public static void SolveDay1()
@@ -1600,6 +1602,177 @@ namespace AdventOfCode2021
 			sw.Stop();
 			Console.WriteLine($"Day 14, Part 1: {day14Part1Solution}");
 			Console.WriteLine($"Day 14, Part 2: {day14Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public static int Day15FindShortestPath(int[,] grid)
+		{
+			int[,] weight = new int[grid.GetLength(0), grid.GetLength(1)];
+			for (int i = 0; i < weight.GetLength(0); i++)
+			{
+				for (int j = 0; j < weight.GetLength(1); j++)
+				{
+					weight[i, j] = int.MaxValue;
+				}
+			}
+
+			Queue<Tuple<int, int>> tuples = new();
+			tuples.Enqueue(new Tuple<int, int>(0, 0));
+			weight[0, 0] = 0;
+			while (tuples.Count > 0)
+			{
+				var thisTuple = tuples.Dequeue();
+
+				//UP
+				if (thisTuple.Item1 > 0)
+				{
+					var newWeight = weight[thisTuple.Item1, thisTuple.Item2] + grid[thisTuple.Item1 - 1, thisTuple.Item2];
+					if (newWeight < weight[thisTuple.Item1 - 1, thisTuple.Item2])
+					{
+						weight[thisTuple.Item1 - 1, thisTuple.Item2] = newWeight;
+						tuples.Enqueue(new Tuple<int, int>(thisTuple.Item1 - 1, thisTuple.Item2));
+					}
+				}
+
+				//LEFT
+				if (thisTuple.Item2 > 0)
+				{
+					var newWeight = weight[thisTuple.Item1, thisTuple.Item2] + grid[thisTuple.Item1, thisTuple.Item2 - 1];
+					if (newWeight < weight[thisTuple.Item1, thisTuple.Item2 - 1])
+					{
+						weight[thisTuple.Item1, thisTuple.Item2 - 1] = newWeight;
+						tuples.Enqueue(new Tuple<int, int>(thisTuple.Item1, thisTuple.Item2 - 1));
+					}
+				}
+
+				//RIGHT
+				if (thisTuple.Item2 < (grid.GetLength(1) - 1))
+				{
+					var newWeight = weight[thisTuple.Item1, thisTuple.Item2] + grid[thisTuple.Item1, thisTuple.Item2 + 1];
+					if (newWeight < weight[thisTuple.Item1, thisTuple.Item2 + 1])
+					{
+						weight[thisTuple.Item1, thisTuple.Item2 + 1] = newWeight;
+						tuples.Enqueue(new Tuple<int, int>(thisTuple.Item1, thisTuple.Item2 + 1));
+					}
+				}
+
+				//DOWN
+				if (thisTuple.Item1 < (grid.GetLength(0) - 1))
+				{
+					var newWeight = weight[thisTuple.Item1, thisTuple.Item2] + grid[thisTuple.Item1 + 1, thisTuple.Item2];
+					if (newWeight < weight[thisTuple.Item1 + 1, thisTuple.Item2])
+					{
+						weight[thisTuple.Item1 + 1, thisTuple.Item2] = newWeight;
+						tuples.Enqueue(new Tuple<int, int>(thisTuple.Item1 + 1, thisTuple.Item2));
+					}
+				}
+			}
+
+			return weight[weight.GetLength(0) - 1, weight.GetLength(1) - 1];
+		}
+
+		public static void SolveDay15()
+		{
+			var input = File.ReadAllLines(@"input\15.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			int s = input.Length;
+			int[,] part1Grid = new int[s, s];
+			int[,] part2Grid = new int[s * 5, s * 5];
+
+			for (int i = 0; i < s; i++)
+			{
+				for (int j = 0; j < s; j++)
+				{
+					int value = (int)input[i][j] - 48;
+					part1Grid[i + (0 * s), j + (0 * s)] = value;
+					part2Grid[i + (0 * s), j + (0 * s)] = value;
+
+					//9
+					value++;
+					if (value > 9)
+						value = 1;
+
+					part2Grid[i + (1 * s), j + (0 * s)] = value;
+					part2Grid[i + (0 * s), j + (1 * s)] = value;
+
+					//1
+					value++;
+					if (value > 9)
+						value = 1;
+
+					part2Grid[i + (2 * s), j + (0 * s)] = value;
+					part2Grid[i + (1 * s), j + (1 * s)] = value;
+					part2Grid[i + (0 * s), j + (2 * s)] = value;
+
+					//2
+					value++;
+					if (value > 9)
+						value = 1;
+
+					part2Grid[i + (3 * s), j + (0 * s)] = value;
+					part2Grid[i + (2 * s), j + (1 * s)] = value;
+					part2Grid[i + (1 * s), j + (2 * s)] = value;
+					part2Grid[i + (0 * s), j + (3 * s)] = value;
+
+					//3
+					value++;
+					if (value > 9)
+						value = 1;
+
+					part2Grid[i + (4 * s), j + (0 * s)] = value;
+					part2Grid[i + (3 * s), j + (1 * s)] = value;
+					part2Grid[i + (2 * s), j + (2 * s)] = value;
+					part2Grid[i + (1 * s), j + (3 * s)] = value;
+					part2Grid[i + (0 * s), j + (4 * s)] = value;
+
+					//4
+					value++;
+					if (value > 9)
+						value = 1;
+
+					part2Grid[i + (4 * s), j + (1 * s)] = value;
+					part2Grid[i + (3 * s), j + (2 * s)] = value;
+					part2Grid[i + (2 * s), j + (3 * s)] = value;
+					part2Grid[i + (1 * s), j + (4 * s)] = value;
+
+					//5
+					value++;
+					if (value > 9)
+						value = 1;
+
+					part2Grid[i + (4 * s), j + (2 * s)] = value;
+					part2Grid[i + (3 * s), j + (3 * s)] = value;
+					part2Grid[i + (2 * s), j + (4 * s)] = value;
+
+					//6
+					value++;
+					if (value > 9)
+						value = 1;
+
+					part2Grid[i + (4 * s), j + (3 * s)] = value;
+					part2Grid[i + (3 * s), j + (4 * s)] = value;
+
+					//7
+					value++;
+					if (value > 9)
+						value = 1;
+
+					part2Grid[i + (4 * s), j + (4 * s)] = value;
+				}
+			}
+
+			//Part 1
+			int day15Part1Solution = Day15FindShortestPath(part1Grid);
+
+			//Part 2
+			int day15Part2Solution = Day15FindShortestPath(part2Grid);
+
+			sw.Stop();
+			Console.WriteLine($"Day 15, Part 1: {day15Part1Solution}");
+			Console.WriteLine($"Day 15, Part 2: {day15Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
