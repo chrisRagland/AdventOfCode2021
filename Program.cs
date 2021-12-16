@@ -1786,8 +1786,6 @@ namespace AdventOfCode2021
 			public int index;
 			public int totalVersionNumber;
 
-			public bool printOutput = false;
-
 			public void Solve()
 			{
 				var input = File.ReadAllLines(@"input\16.txt");
@@ -1799,22 +1797,15 @@ namespace AdventOfCode2021
 				totalVersionNumber = 0;
 				index = 0;
 
-				var day16Part2Solution = Process(true);
+				var day16Part2Solution = Process();
 
 				sw.Stop();
-
-				if (printOutput)
-					Console.WriteLine();
-
 				Console.WriteLine($"Day 16, Part 1: {totalVersionNumber}");
-
-				if (!printOutput)
-					Console.WriteLine($"Day 15, Part 2: {day16Part2Solution}");
-
+				Console.WriteLine($"Day 15, Part 2: {day16Part2Solution}");
 				Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 			}
 
-			public long Process(bool removePaddedZeroes = false)
+			public long Process()
 			{
 				var packetVersion = Convert.ToInt32(binaryInput.Substring(index, 3), 2);
 				totalVersionNumber += packetVersion;
@@ -1823,90 +1814,30 @@ namespace AdventOfCode2021
 				var packetType = Convert.ToInt32(binaryInput.Substring(index, 3), 2);
 				index += 3;
 
-				long returnValue = 0;
-
 				switch (packetType)
 				{
-					case 4:
-						returnValue = ProcessLiteral();
-						break;
 					case 0:
-						if (printOutput)
-							Console.WriteLine("<Sum>");
-
-						returnValue = ProcessOperator().Sum();
-
-						if (printOutput)
-							Console.WriteLine("</Sum>");
-						break;
+						return ProcessOperator().Sum();
 					case 1:
-						if (printOutput)
-							Console.WriteLine("<Product>");
-
-						returnValue = ProcessOperator().Aggregate(1L, (x, y) => x * y);
-
-						if (printOutput)
-							Console.WriteLine("</Product>");
-						break;
+						return ProcessOperator().Aggregate(1L, (x, y) => x * y);
 					case 2:
-						if (printOutput)
-							Console.WriteLine("<Min>");
-
-						returnValue = ProcessOperator().Min();
-
-						if (printOutput)
-							Console.WriteLine("</Min>");
-						break;
+						return ProcessOperator().Min();
 					case 3:
-						if (printOutput)
-							Console.WriteLine("<Max>");
-
-						returnValue = ProcessOperator().Max();
-
-						if (printOutput)
-							Console.WriteLine("</Max>");
-						break;
+						return ProcessOperator().Max();
+					case 4:
+						return ProcessLiteral();
 					case 5:
-						if (printOutput)
-							Console.WriteLine("<Greater Than>");
-
 						var gtValues = ProcessOperator();
-						if (gtValues[0] > gtValues[1])
-							returnValue = 1;
-
-						if (printOutput)
-							Console.WriteLine("</Greater Than>");
-						break;
+						return gtValues[0] > gtValues[1] ? 1 : 0;
 					case 6:
-						if (printOutput)
-							Console.WriteLine("<Less Than>");
-
 						var ltValues = ProcessOperator();
-						if (ltValues[0] < ltValues[1])
-							returnValue = 1;
-
-						if (printOutput)
-							Console.WriteLine("</Less Than>");
-						break;
+						return ltValues[0] < ltValues[1] ? 1 : 0;
 					case 7:
-						if (printOutput)
-							Console.WriteLine("<Equals>");
-
 						var eqValues = ProcessOperator();
-						if (eqValues[0] == eqValues[1])
-							returnValue = 1;
-
-						if (printOutput)
-							Console.WriteLine("</Equals>");
-						break;
+						return eqValues[0] == eqValues[1] ? 1 : 0;
 					default:
-						break;
+						return 0;
 				}
-
-				if (removePaddedZeroes)
-					FixPaddedZeroes();
-
-				return returnValue;
 			}
 
 			public long ProcessLiteral()
@@ -1925,12 +1856,7 @@ namespace AdventOfCode2021
 						finalDigit = true;
 				}
 
-				var value = Convert.ToInt64(literal, 2);
-
-				if (printOutput)
-					Console.WriteLine(value);
-
-				return value;
+				return Convert.ToInt64(literal, 2);
 			}
 
 			public List<long> ProcessOperator()
@@ -1943,20 +1869,17 @@ namespace AdventOfCode2021
 				switch (lengthTypeID)
 				{
 					case 0:
-
 						var bits = Convert.ToInt32(binaryInput.Substring(index, 15), 2);
 						index += 15;
 
 						var indexTarget = index + bits;
-
 						while (index < indexTarget)
 						{
 							values.Add(Process());
 						}
 
-						break;
+						return values;
 					case 1:
-
 						var packets = Convert.ToInt32(binaryInput.Substring(index, 11), 2);
 						index += 11;
 
@@ -1965,30 +1888,9 @@ namespace AdventOfCode2021
 							values.Add(Process());
 						}
 
-						break;
+						return values;
 					default:
-						break;
-				}
-
-				return values;
-			}
-
-			public void FixPaddedZeroes()
-			{
-				if (index % 4 != 0)
-					index += (4 - index % 4);
-
-				while (index != binaryInput.Length)
-				{
-					var nextHex = binaryInput.Substring(index, 4);
-					if (nextHex == "0000")
-					{
-						index += 4;
-					}
-					else
-					{
-						break;
-					}
+						return values;
 				}
 			}
 		}
