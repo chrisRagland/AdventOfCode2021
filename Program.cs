@@ -38,7 +38,10 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay14();
 			//Console.WriteLine();
-			SolveDay15();
+			//SolveDay15();
+			//Console.WriteLine();
+			Day16 day16 = new();
+			day16.Solve();
 		}
 
 		public static void SolveDay1()
@@ -83,7 +86,8 @@ namespace AdventOfCode2021
 			var input = File.ReadAllLines(@"input\02.txt")
 				.AsEnumerable()
 				.Select(x => x.Split(' '))
-				.Select(x => new Day2SubCommand() {
+				.Select(x => new Day2SubCommand()
+				{
 					Command = x[0],
 					XValue = int.Parse(x[1])
 				}).ToArray();
@@ -245,7 +249,7 @@ namespace AdventOfCode2021
 						co2 = oneCo2;
 						if (co2Count[0] == 1)
 						{
-							co2Value = input[Array.IndexOf(co2,true)];
+							co2Value = input[Array.IndexOf(co2, true)];
 							doneCo2 = true;
 						}
 					}
@@ -702,7 +706,7 @@ namespace AdventOfCode2021
 				var outputValue = splitInput[1].Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => String.Concat(x.OrderBy(x => x))).ToArray();
 
 				Dictionary<string, int> lookup = new();
-				lookup.Add(tenDigits[0], 1);	//Digit 1 is our two char Digit
+				lookup.Add(tenDigits[0], 1);    //Digit 1 is our two char Digit
 				lookup.Add(tenDigits[1], 7);    //Digit 7 is our three char Digit
 				lookup.Add(tenDigits[2], 4);    //Digit 4 is our four char Digit
 				lookup.Add(tenDigits[9], 8);    //Digit 8 is our nine char Digit
@@ -846,7 +850,7 @@ namespace AdventOfCode2021
 					nodesVisited.Add(currentNode);
 
 					//Up
-					if (currentNode.J - 1 >= 0 && grid[currentNode.I,(currentNode.J-1)] != 9)
+					if (currentNode.J - 1 >= 0 && grid[currentNode.I, (currentNode.J - 1)] != 9)
 					{
 						Day9GridPoint upPoint = new() { I = currentNode.I, J = (currentNode.J - 1) };
 						if (!nodesToVisit.Contains(upPoint) && !nodesVisited.Contains(upPoint))
@@ -1022,7 +1026,7 @@ namespace AdventOfCode2021
 
 			Stopwatch sw = new();
 			sw.Start();
-			
+
 			//Initial Setup
 			int size = 10;
 			int day11Part1Solution = 0;
@@ -1774,6 +1778,167 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Day 15, Part 1: {day15Part1Solution}");
 			Console.WriteLine($"Day 15, Part 2: {day15Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public class Day16
+		{
+			public string binaryInput;
+			public int index;
+			public int totalVersionNumber;
+
+			public void Solve()
+			{
+				var input = File.ReadAllLines(@"input\16.txt");
+
+				Stopwatch sw = new();
+				sw.Start();
+
+				binaryInput = string.Join(string.Empty, input[0].Select(c => Convert.ToString(Convert.ToInt32(c.ToString(), 16), 2).PadLeft(4, '0')));
+				totalVersionNumber = 0;
+				index = 0;
+
+				Process(true);
+
+				sw.Stop();
+				Console.WriteLine();
+				Console.WriteLine($"Day 16, Part 1: {totalVersionNumber}");
+				//Console.WriteLine($"Day 15, Part 2: {day15Part2Solution}");
+				Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+			}
+
+			public void Process(bool removePaddedZeroes = false)
+			{
+				var packetVersion = Convert.ToInt32(binaryInput.Substring(index, 3), 2);
+				totalVersionNumber += packetVersion;
+				index += 3;
+
+				var packetType = Convert.ToInt32(binaryInput.Substring(index, 3), 2);
+				index += 3;
+
+				switch (packetType)
+				{
+					case 4:
+						ProcessLiteral();
+						break;
+					case 0:
+						Console.WriteLine("<Sum>");
+						ProcessOperator();
+						Console.WriteLine("</Sum>");
+						break;
+					case 1:
+						Console.WriteLine("<Product>");
+						ProcessOperator();
+						Console.WriteLine("</Product>");
+						break;
+					case 2:
+						Console.WriteLine("<Min>");
+						ProcessOperator();
+						Console.WriteLine("</Min>");
+						break;
+					case 3:
+						Console.WriteLine("<Max>");
+						ProcessOperator();
+						Console.WriteLine("</Max>");
+						break;
+					case 5:
+						Console.WriteLine("<Greater Than>");
+						ProcessOperator();
+						Console.WriteLine("</Greater Than>");
+						break;
+					case 6:
+						Console.WriteLine("<Less Than>");
+						ProcessOperator();
+						Console.WriteLine("</Less Than>");
+						break;
+					case 7:
+						Console.WriteLine("<Equals>");
+						ProcessOperator();
+						Console.WriteLine("</Equals>");
+						break;
+					default:
+						ProcessOperator();
+						break;
+				}
+
+				if (removePaddedZeroes)
+					FixPaddedZeroes();
+
+			}
+
+			public void ProcessLiteral()
+			{
+				bool finalDigit = false;
+				string literal = string.Empty;
+				while (!finalDigit)
+				{
+					var prefix = binaryInput[index];
+					index++;
+
+					literal += binaryInput.Substring(index, 4);
+					index += 4;
+
+					if (prefix == '0')
+						finalDigit = true;
+				}
+
+				var value = Convert.ToInt64(literal, 2);
+				Console.WriteLine(value);
+			}
+
+			public void ProcessOperator()
+			{
+				var lengthTypeID = Convert.ToInt32(binaryInput.Substring(index, 1), 2);
+				index++;
+
+				switch (lengthTypeID)
+				{
+					case 0:
+
+						var bits = Convert.ToInt32(binaryInput.Substring(index, 15), 2);
+						index += 15;
+
+						var indexTarget = index + bits;
+
+						while (index < indexTarget)
+						{
+							Process();
+						}
+
+						break;
+					case 1:
+
+						var packets = Convert.ToInt32(binaryInput.Substring(index, 11), 2);
+						index += 11;
+
+						for (int i = 0; i < packets; i++)
+						{
+							Process();
+						}
+
+						break;
+					default:
+						break;
+				}
+			}
+
+			public void FixPaddedZeroes()
+			{
+				if (index % 4 != 0)
+					index += (4 - index % 4);
+
+				while (index != binaryInput.Length)
+				{
+					var nextHex = binaryInput.Substring(index, 4);
+					if (nextHex == "0000")
+					{
+						index += 4;
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
 		}
 	}
 }
