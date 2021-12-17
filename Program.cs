@@ -40,8 +40,10 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay15();
 			//Console.WriteLine();
-			Day16 day16 = new();
-			day16.Solve();
+			//Day16 day16 = new();
+			//day16.Solve();
+			//Console.WriteLine();
+			SolveDay17();
 		}
 
 		public static void SolveDay1()
@@ -1893,6 +1895,86 @@ namespace AdventOfCode2021
 						return values;
 				}
 			}
+		}
+
+		public static void SolveDay17()
+		{
+			var input = File.ReadAllLines(@"input\17.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			var split = input[0].Replace(",", "").Split(' ');
+			var xValues = split[2].Split("=")[1].Split("..").Select(x => int.Parse(x));
+			var yValues = split[3].Split("=")[1].Split("..").Select(x => int.Parse(x));
+
+			var minXValue = xValues.Min();
+			var maxXValue = xValues.Max();
+			var minYValue = yValues.Min();
+			var maxYValue = yValues.Max();
+
+			var day17Part1Solution = int.MinValue;
+			var day17Part2Solution = 0;
+
+			int target = Math.Max(Math.Abs(minYValue),Math.Abs(maxYValue));
+
+			for (int y = (-1 * target); y < target; y++)
+			{
+				for (int x = 0; x < 2 * maxXValue; x++)
+				{
+					var thisVeloMaxY = int.MinValue;
+					int thisXVelo = x;
+					int thisYVelo = y;
+					int thisXPos = 0;
+					int thisYPos = 0;
+
+					while (true)
+					{
+						thisXPos += thisXVelo;
+						thisYPos += thisYVelo;
+
+						//gravity
+						thisYVelo--;
+
+						//drag
+						if (thisXVelo > 0)
+							thisXVelo--;
+						else if (thisXVelo < 0)
+							thisXVelo++;
+
+						//track highest y value
+						if (thisYPos > thisVeloMaxY)
+						{
+							thisVeloMaxY = thisYPos;
+						}
+
+						if (thisXPos >= minXValue && thisXPos <= maxXValue && thisYPos >= minYValue && thisYPos <= maxYValue)
+						{
+							//VALID
+							day17Part2Solution++;
+
+							if (thisVeloMaxY > day17Part1Solution)
+								day17Part1Solution = thisVeloMaxY;
+
+							break;
+						}
+						else
+						{
+							if ((thisXVelo == 0 && (thisXPos < minXValue || thisXPos > maxXValue)) || thisYPos < minYValue)
+							{
+								//IMPOSSIBLE
+								break;
+							}
+						}
+					}
+
+				}
+			}
+
+			sw.Stop();
+			Console.WriteLine($"Day 17, Part 1: {day17Part1Solution}");
+			Console.WriteLine($"Day 17, Part 2: {day17Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
 }
