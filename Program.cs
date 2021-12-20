@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 
 namespace AdventOfCode2021
 {
@@ -43,7 +44,11 @@ namespace AdventOfCode2021
 			//Day16 day16 = new();
 			//day16.Solve();
 			//Console.WriteLine();
-			SolveDay17();
+			//SolveDay17();
+			//Console.WriteLine();
+			//SolveDay18();
+			//Console.WriteLine();
+			SolveDay19();
 		}
 
 		public static void SolveDay1()
@@ -1916,11 +1921,9 @@ namespace AdventOfCode2021
 			var day17Part1Solution = int.MinValue;
 			var day17Part2Solution = 0;
 
-			int target = Math.Max(Math.Abs(minYValue),Math.Abs(maxYValue));
-
-			for (int y = (-1 * target); y < target; y++)
+			for (int y = minYValue; y <= (-1 * minYValue); y++)
 			{
-				for (int x = 0; x < 2 * maxXValue; x++)
+				for (int x = 0; x <= maxXValue; x++)
 				{
 					var thisVeloMaxY = int.MinValue;
 					int thisXVelo = x;
@@ -1975,6 +1978,351 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Day 17, Part 1: {day17Part1Solution}");
 			Console.WriteLine($"Day 17, Part 2: {day17Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public struct Day18ExplodedValues
+		{
+			public int LeftValue { get; set; }
+			public int RightValue { get; set; }
+		}
+
+		public class Day18SnailfishNumber
+		{
+			public Day18SnailfishNumber Left { get; set; }
+			public Day18SnailfishNumber Right { get; set; }
+			public int Value { get; set; }
+
+			public bool NumericValue()
+			{
+				return Left == null && Right == null;
+			}
+
+			public int Magnitude()
+			{
+				if (NumericValue())
+					return Value;
+
+				return ((3 * Left.Magnitude()) + (2 * Right.Magnitude()));
+			}
+
+			public static Day18SnailfishNumber Create(string input, ref int index)
+			{
+				Day18SnailfishNumber newSnailfishNumber = new();
+				if (char.IsDigit(input[index]))
+				{
+					newSnailfishNumber.Value = int.Parse(input[index].ToString());
+					index++;
+					return newSnailfishNumber;
+				}
+				else
+				{
+					index++;
+					newSnailfishNumber.Left = Create(input, ref index);
+					index++;
+					newSnailfishNumber.Right = Create(input, ref index);
+					index++;
+					return newSnailfishNumber;
+				}
+			}
+
+			public void Add(Day18SnailfishNumber secondNumber)
+			{
+				Day18SnailfishNumber newSnailfishNumber = new() { Left = Left, Right = Right };
+				Left = newSnailfishNumber;
+				Right = secondNumber.Clone();
+				Reduce();
+			}
+
+			public Day18SnailfishNumber Clone()
+			{
+				return new Day18SnailfishNumber()
+				{
+					Left = Left?.Clone(),
+					Right = Right?.Clone(),
+					Value = Value
+				};
+			}
+
+			public void Reduce()
+			{
+				while (true)
+				{
+					Explode();
+					if (Split())
+						continue;
+					break;
+				}
+			}
+
+			public Day18ExplodedValues Explode(int depth = 0)
+			{
+				if (NumericValue())
+					return new Day18ExplodedValues();
+
+				if (depth >= 4 && Left != null && Left.NumericValue() && Right != null && Right.NumericValue())
+				{
+					//Explode if at depth 4+ and in a "natural pair"
+					var returnValues = new Day18ExplodedValues() { LeftValue = Left.Value, RightValue = Right.Value };
+					Left = null;
+					Right = null;
+					Value = 0;
+					return returnValues;
+				}
+				else
+				{
+					var explodedLeft = Left.Explode(depth + 1);
+					if (explodedLeft.RightValue > 0)
+					{
+						var rightBranch = Right;
+						while (!rightBranch.NumericValue())
+						{
+							rightBranch = rightBranch.Left;
+						}
+						rightBranch.Value += explodedLeft.RightValue;
+					}
+
+					var explodedRight = Right.Explode(depth + 1);
+					if (explodedRight.LeftValue > 0)
+					{
+						var leftBranch = Left;
+						while (!leftBranch.NumericValue())
+						{
+							leftBranch = leftBranch.Right;
+						}
+						leftBranch.Value += explodedRight.LeftValue;
+					}
+
+					return new Day18ExplodedValues() { LeftValue = explodedLeft.LeftValue, RightValue = explodedRight.RightValue };
+				}
+			}
+
+			public bool Split()
+			{
+				if (Value >= 10 && NumericValue())
+				{
+					//Split if the value is greater than or equal to 10
+					Left = new Day18SnailfishNumber() { Value = Value / 2 };
+					Right = new Day18SnailfishNumber() { Value = (Value + 1) / 2 };
+
+					return true;
+				}
+				else
+				{
+					if (Left != null && Left.Split())
+						return true;
+
+					if (Right != null && Right.Split())
+						return true;
+
+					return false;
+				}
+			}
+
+			public override string ToString()
+			{
+				if (NumericValue())
+					return Value.ToString();
+
+				return $"[{Left},{Right}]";
+			}
+
+			public static Day18SnailfishNumber AddCreateNew(Day18SnailfishNumber firstNumber, Day18SnailfishNumber secondNumber)
+			{
+				Day18SnailfishNumber newSnailfishNumber = new() { Left = firstNumber.Clone(), Right = secondNumber.Clone() };
+				newSnailfishNumber.Reduce();
+				return newSnailfishNumber;
+			}
+		}
+
+		public static void SolveDay18()
+		{
+			var input = File.ReadAllLines(@"input\18.txt");
+
+			var sw = new Stopwatch();
+			sw.Start();
+
+			List<Day18SnailfishNumber> numbers = new();
+			foreach (var item in input)
+			{
+				int index = 0;
+				var newSnailfishNumber = Day18SnailfishNumber.Create(item, ref index);
+				numbers.Add(newSnailfishNumber);
+			}
+
+			//Part 1
+			var originalNumberZero = numbers[0].Clone();
+			for (int i = 1; i < numbers.Count; i++)
+			{
+				numbers[0].Add(numbers[i]);
+			}
+			var day18Part1Solution = numbers[0].Magnitude();
+			numbers[0] = originalNumberZero;
+
+			//Part 2
+			var day18Part2Solution = int.MinValue;
+			for (int i = 0; i < numbers.Count; i++)
+			{
+				for (int j = 0; j < numbers.Count; j++)
+				{
+					if (i == j)
+						continue;
+
+					var snailfishIPlusJ = Day18SnailfishNumber.AddCreateNew(numbers[i], numbers[j]);
+					var snailfishIPlusJMagnitude = snailfishIPlusJ.Magnitude();
+					if (snailfishIPlusJMagnitude > day18Part2Solution)
+					{
+						day18Part2Solution = snailfishIPlusJMagnitude;
+					}
+
+					var snailfishJPlusI = Day18SnailfishNumber.AddCreateNew(numbers[j], numbers[i]);
+					var snailfishJPlusIMagnitude = snailfishJPlusI.Magnitude();
+					if (snailfishJPlusIMagnitude > day18Part2Solution)
+					{
+						day18Part2Solution = snailfishJPlusIMagnitude;
+					}
+				}
+			}
+
+			sw.Stop();
+			Console.WriteLine($"Day 18, Part 1: {day18Part1Solution}");
+			Console.WriteLine($"Day 18, Part 2: {day18Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public static void SolveDay19()
+		{
+			var input = File.ReadAllLines(@"input\19.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			List<Day19Scanner> scanners = new();
+			Day19Scanner newScanner = new();
+			foreach (var item in input)
+			{
+				if (item.Contains("---"))
+				{
+					newScanner.Id = int.Parse(item.Split(" ")[2]);
+				}
+				else if (item.Length == 0)
+				{
+					scanners.Add(newScanner);
+					newScanner = new();
+				}
+				else
+				{
+					var splitValues = item.Split(',').Select(x => int.Parse(x)).ToArray();
+					newScanner.Beacons.Add(new Vector3(splitValues[0], splitValues[1], splitValues[2]));
+				}
+			}
+			scanners.Add(newScanner);
+
+			List<Day19Scanner> processedScanners = new() { scanners[0] };
+			HashSet<Vector3> locatedBeacons = scanners[0].Beacons.ToHashSet();
+			Queue<Day19Scanner> scannersToProcess = new();
+			for (int i = 1; i < scanners.Count; i++)
+				scannersToProcess.Enqueue(scanners[i]);
+
+			while (scannersToProcess.Count > 0)
+			{
+				var scannerToCheck = scannersToProcess.Dequeue();
+				var scannerLocated = false;
+				foreach (var transformation in Day19Transforms)
+				{
+					//Transform the current beacons
+					var transformedBeacons = scannerToCheck.Beacons.Select(transformation).ToList();
+
+					//Find the difference of these beacons to ones we know the location of
+					var offsetBeaconsFromLocated = transformedBeacons.SelectMany(x => locatedBeacons.Select(y => x - y));
+
+					//Find if we have 12+ beacons with the same offset
+					var offsetMatched = offsetBeaconsFromLocated.GroupBy(x => x).Where(x => x.Count() >= 12).Select(x => (Vector: x.Key, Count: x.Count()));
+
+					if (offsetMatched != null && offsetMatched.Count() > 0)
+					{
+						var offsetVector = offsetMatched.ElementAt(0).Vector;
+						
+						//Add the newly located beacons to our set
+						foreach (var beacon in transformedBeacons)
+						{
+							locatedBeacons.Add(beacon - offsetVector);
+						}
+
+						//Store the scanner location for Part 2
+						scannerToCheck.ScannerLocation = offsetVector;
+						processedScanners.Add(scannerToCheck);
+
+						scannerLocated = true;
+					}
+				}
+
+				//This scanner could not be located currently, try again later
+				if (!scannerLocated)
+					scannersToProcess.Enqueue(scannerToCheck);
+			}
+
+			//Part 2
+			int maxManhattanDistance = int.MinValue;
+
+			for (int i = 0; i < processedScanners.Count; i++)
+			{
+				for (int j = (i + 1); j < processedScanners.Count; j++)
+				{
+					var thisManhattanDistance =
+						(int)Math.Abs(processedScanners[i].ScannerLocation.X - processedScanners[j].ScannerLocation.X)
+						+
+						(int)Math.Abs(processedScanners[i].ScannerLocation.Y - processedScanners[j].ScannerLocation.Y)
+						+
+						(int)Math.Abs(processedScanners[i].ScannerLocation.Z - processedScanners[j].ScannerLocation.Z);
+
+					if (thisManhattanDistance > maxManhattanDistance)
+					{
+						maxManhattanDistance = thisManhattanDistance;
+					}
+				}
+			}
+
+			sw.Stop();
+			Console.WriteLine($"Day 19, Part 1: {locatedBeacons.Count}");
+			Console.WriteLine($"Day 19, Part 2: {maxManhattanDistance}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public static Func<Vector3, Vector3>[] Day19Transforms = new Func<Vector3, Vector3>[]
+		{
+			vectorIn => new(vectorIn.X, vectorIn.Y, vectorIn.Z),
+			vectorIn => new(vectorIn.X, vectorIn.Z, -vectorIn.Y),
+			vectorIn => new(vectorIn.X, -vectorIn.Y, -vectorIn.Z),
+			vectorIn => new(vectorIn.X, -vectorIn.Z, vectorIn.Y),
+			vectorIn => new(-vectorIn.X, vectorIn.Y, -vectorIn.Z),
+			vectorIn => new(-vectorIn.X, vectorIn.Z, vectorIn.Y),
+			vectorIn => new(-vectorIn.X, -vectorIn.Y, vectorIn.Z),
+			vectorIn => new(-vectorIn.X, -vectorIn.Z, -vectorIn.Y),
+
+			vectorIn => new(vectorIn.Y, vectorIn.X, -vectorIn.Z),
+			vectorIn => new(vectorIn.Y, vectorIn.Z, vectorIn.X),
+			vectorIn => new(vectorIn.Y, -vectorIn.X, vectorIn.Z),
+			vectorIn => new(vectorIn.Y, -vectorIn.Z, -vectorIn.X),
+			vectorIn => new(-vectorIn.Y, vectorIn.X, vectorIn.Z),
+			vectorIn => new(-vectorIn.Y, vectorIn.Z, -vectorIn.X),
+			vectorIn => new(-vectorIn.Y, -vectorIn.X, -vectorIn.Z),
+			vectorIn => new(-vectorIn.Y, -vectorIn.Z, vectorIn.X),
+
+			vectorIn => new(vectorIn.Z, vectorIn.X, vectorIn.Y),
+			vectorIn => new(vectorIn.Z, vectorIn.Y, -vectorIn.X),
+			vectorIn => new(vectorIn.Z, -vectorIn.X, -vectorIn.Y),
+			vectorIn => new(vectorIn.Z, -vectorIn.Y, vectorIn.X),
+			vectorIn => new(-vectorIn.Z, vectorIn.X, -vectorIn.Y),
+			vectorIn => new(-vectorIn.Z, vectorIn.Y, vectorIn.X),
+			vectorIn => new(-vectorIn.Z, -vectorIn.X, vectorIn.Y),
+			vectorIn => new(-vectorIn.Z, -vectorIn.Y, -vectorIn.X)
+		};
+
+		public class Day19Scanner
+		{
+			public int Id { get; set; }
+			public List<Vector3> Beacons { get; set; } = new();
+			public Vector3 ScannerLocation { get; set; } = new();
 		}
 	}
 }
