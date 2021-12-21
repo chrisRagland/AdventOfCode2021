@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace AdventOfCode2021
 {
@@ -48,7 +50,9 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay18();
 			//Console.WriteLine();
-			SolveDay19();
+			//SolveDay19();
+			//Console.WriteLine();
+			SolveDay20();
 		}
 
 		public static void SolveDay1()
@@ -2323,6 +2327,77 @@ namespace AdventOfCode2021
 			public int Id { get; set; }
 			public List<Vector3> Beacons { get; set; } = new();
 			public Vector3 ScannerLocation { get; set; } = new();
+		}
+
+		public static void SolveDay20()
+		{
+			var input = File.ReadAllLines(@"input\20.txt");
+
+			Stopwatch sw = new();
+			sw.Start();
+
+			int day20Part1Solution = 0;
+			int day20Part2Solution = 0;
+
+			var algorithm = input[0].Select(x => x == '#').ToArray();
+			int size = input[2].Length;
+
+			bool AllOffState = algorithm[0];
+			bool AllOnState = algorithm[511];
+			bool infiniteState = AllOffState ? AllOnState : AllOffState;
+
+			HashSet<(int, int)> grid = new();
+			for (int i = 0; i < size; i++)
+				for (int j = 0; j < size; j++)
+					if (input[i + 2][j] == '#')
+						grid.Add((i, j));
+
+
+			for (int step = 0; step < 50; step++)
+			{
+				HashSet<(int, int)> newGrid = new();
+				var minI = grid.Min(x => x.Item1);
+				var maxI = grid.Max(x => x.Item1);
+				var minJ = grid.Min(x => x.Item2);
+				var maxJ = grid.Max(x => x.Item2);
+				for (int i = minI - 1; i <= maxI + 1; i++)
+				{
+					for (int j = minJ - 1; j <= maxJ + 1; j++)
+					{
+						var bitValues = new BitArray(new bool[]
+						{
+							(infiniteState && (i+1 > maxI || i+1 < minI || j+1 > maxJ || j+1 < minJ)) || grid.Contains((i+1,j+1)),
+							(infiniteState && (i+1 > maxI || i+1 < minI || j > maxJ || j < minJ)) || grid.Contains((i+1,j)),
+							(infiniteState && (i+1 > maxI || i+1 < minI || j-1 > maxJ || j-1 < minJ)) || grid.Contains((i+1,j-1)),
+
+							(infiniteState && (i > maxI || i < minI || j+1 > maxJ || j+1 < minJ)) || grid.Contains((i,j+1)),
+							(infiniteState && (i > maxI || i < minI || j > maxJ || j < minJ)) || grid.Contains((i,j)),
+							(infiniteState && (i > maxI || i < minI || j-1 > maxJ || j-1 < minJ)) || grid.Contains((i,j-1)),
+
+							(infiniteState && (i-1 > maxI || i-1 < minI || j+1 > maxJ || j+1 < minJ)) || grid.Contains((i-1,j+1)),
+							(infiniteState && (i-1 > maxI || i-1 < minI || j > maxJ || j < minJ)) || grid.Contains((i-1,j)),
+							(infiniteState && (i-1 > maxI || i-1 < minI || j-1 > maxJ || j-1 < minJ)) || grid.Contains((i-1,j-1)),
+						});
+						var value = new int[1];
+						bitValues.CopyTo(value, 0);
+
+						if (algorithm[value[0]])
+							newGrid.Add((i, j));
+					}
+				}
+				grid = newGrid;
+				infiniteState = infiniteState ? AllOnState : AllOffState;
+				if (step == 1)
+				{
+					day20Part1Solution = grid.Count();
+				}
+			}
+			day20Part2Solution = grid.Count();
+
+			sw.Stop();
+			Console.WriteLine($"Day 20, Part 1: {day20Part1Solution}");
+			Console.WriteLine($"Day 20, Part 2: {day20Part2Solution}");
+			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
 		}
 	}
 }
