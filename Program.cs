@@ -2410,12 +2410,7 @@ namespace AdventOfCode2021
 			public static int Day21RollDeterministicDie()
 			{
 				deterministicDieRolls++;
-
-				deterministicDieValue++;
-
-				if (deterministicDieValue > 100)
-					deterministicDieValue %= 100;
-
+				deterministicDieValue = (deterministicDieValue) % 100 + 1;
 				return deterministicDieValue;
 			}
 
@@ -2423,13 +2418,13 @@ namespace AdventOfCode2021
 				new()
 				{
 					{ 3, 1 },   //(1,1,1)
-				{ 4, 3 },   //(1,1,2)
-				{ 5, 6 },   //(1,2,2) || (1,1,3)
-				{ 6, 7 },   //(1,2,3) || (2,2,2)
-				{ 7, 6 },   //(2,2,3) || (1,3,3)
-				{ 8, 3 },   //(2,3,3)
-				{ 9, 1 },   //(3,3,3)
-			};
+					{ 4, 3 },   //(1,1,2)
+					{ 5, 6 },   //(1,2,2) || (1,1,3)
+					{ 6, 7 },   //(1,2,3) || (2,2,2)
+					{ 7, 6 },   //(2,2,3) || (1,3,3)
+					{ 8, 3 },   //(2,3,3)
+					{ 9, 1 },   //(3,3,3)
+				};
 
 			public struct Day21Player
 			{
@@ -2503,6 +2498,7 @@ namespace AdventOfCode2021
 							player1.AddDieRoll(p1DieRoll.Key);
 							if (player1.Score >= 21)
 							{
+								//Player 1 wins don't count whatever Player 2 would have rolled
 								p1UniverseWins += universeState.Value * p1DieRoll.Value;
 								continue;
 							}
@@ -2515,6 +2511,7 @@ namespace AdventOfCode2021
 								long universeCount = universeState.Value * p1DieRoll.Value * p2DieRoll.Value;
 								if (player2.Score >= 21)
 								{
+									//Player 2 wins have to include the rolls Player 1 made to get us to this state
 									p2UniverseWins += universeCount;
 									continue;
 								}
