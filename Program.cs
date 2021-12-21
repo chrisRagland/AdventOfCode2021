@@ -52,7 +52,10 @@ namespace AdventOfCode2021
 			//Console.WriteLine();
 			//SolveDay19();
 			//Console.WriteLine();
-			SolveDay20();
+			//SolveDay20();
+			//Console.WriteLine();
+			Day21 day21 = new();
+			day21.Solve();
 		}
 
 		public static void SolveDay1()
@@ -2398,6 +2401,146 @@ namespace AdventOfCode2021
 			Console.WriteLine($"Day 20, Part 1: {day20Part1Solution}");
 			Console.WriteLine($"Day 20, Part 2: {day20Part2Solution}");
 			Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+		}
+
+		public class Day21
+		{
+			public static int deterministicDieRolls = 0;
+			public static int deterministicDieValue = 100;
+			public static int Day21RollDeterministicDie()
+			{
+				deterministicDieRolls++;
+
+				deterministicDieValue++;
+
+				if (deterministicDieValue > 100)
+					deterministicDieValue %= 100;
+
+				return deterministicDieValue;
+			}
+
+			public static Dictionary<int, int> DiracDiceRolls =>
+				new()
+				{
+					{ 3, 1 },   //(1,1,1)
+				{ 4, 3 },   //(1,1,2)
+				{ 5, 6 },   //(1,2,2) || (1,1,3)
+				{ 6, 7 },   //(1,2,3) || (2,2,2)
+				{ 7, 6 },   //(2,2,3) || (1,3,3)
+				{ 8, 3 },   //(2,3,3)
+				{ 9, 1 },   //(3,3,3)
+			};
+
+			public struct Day21Player
+			{
+				public int Score { get; set; }
+				public int Pos { get; set; }
+
+				public void AddDieRoll(int DieValue)
+				{
+					Pos = (Pos + DieValue - 1) % 10 + 1;
+					Score += Pos;
+				}
+
+				public override string ToString()
+				{
+					return $"{Pos} - {Score}";
+				}
+			}
+
+			public void Solve()
+			{
+				Stopwatch sw = new();
+				sw.Start();
+
+				long day21Part1Solution;
+				long day21Part2Solution;
+
+				int player1StartingPos = 4;
+				int player2StartingPos = 7;
+
+				var part1 = (
+					new Day21Player() { Pos = player1StartingPos },
+					new Day21Player() { Pos = player2StartingPos }
+				);
+
+				//Part 1
+				while (true)
+				{
+					part1.Item1.AddDieRoll(Day21RollDeterministicDie() + Day21RollDeterministicDie() + Day21RollDeterministicDie());
+					if (part1.Item1.Score >= 1000)
+					{
+						day21Part1Solution = deterministicDieRolls * part1.Item2.Score;
+						break;
+					}
+
+					part1.Item2.AddDieRoll(Day21RollDeterministicDie() + Day21RollDeterministicDie() + Day21RollDeterministicDie());
+					if (part1.Item2.Score >= 1000)
+					{
+						day21Part1Solution = deterministicDieRolls * part1.Item1.Score;
+						break;
+					}
+				}
+
+				//Part 2
+				long p1UniverseWins = 0;
+				long p2UniverseWins = 0;
+
+				Dictionary<(Day21Player, Day21Player), long> allUniverses = new();
+				allUniverses.Add((new Day21Player() { Pos = player1StartingPos }, new Day21Player() { Pos = player2StartingPos }), 1);
+
+				while (allUniverses.Count > 0)
+				{
+					Dictionary<(Day21Player, Day21Player), long> newUniverses = new();
+
+					//For every previous universe state, let Player 1 & Player 2 take a turn
+					foreach (var universeState in allUniverses)
+					{
+						//For every roll combo/count for Player 1
+						foreach (var p1DieRoll in DiracDiceRolls)
+						{
+							var player1 = new Day21Player() { Pos = universeState.Key.Item1.Pos, Score = universeState.Key.Item1.Score };
+							player1.AddDieRoll(p1DieRoll.Key);
+							if (player1.Score >= 21)
+							{
+								p1UniverseWins += universeState.Value * p1DieRoll.Value;
+								continue;
+							}
+
+							//For every roll combo/count for Player 2
+							foreach (var p2DieRoll in DiracDiceRolls)
+							{
+								var player2 = new Day21Player() { Pos = universeState.Key.Item2.Pos, Score = universeState.Key.Item2.Score };
+								player2.AddDieRoll(p2DieRoll.Key);
+								long universeCount = universeState.Value * p1DieRoll.Value * p2DieRoll.Value;
+								if (player2.Score >= 21)
+								{
+									p2UniverseWins += universeCount;
+									continue;
+								}
+
+								if (newUniverses.ContainsKey((player1, player2)))
+								{
+									newUniverses[(player1, player2)] += universeCount;
+								}
+								else
+								{
+									newUniverses.Add((player1, player2), universeCount);
+								}
+							}
+						}
+					}
+
+					allUniverses = newUniverses;
+				}
+
+				day21Part2Solution = p1UniverseWins > p2UniverseWins ? p1UniverseWins : p2UniverseWins;
+
+				sw.Stop();
+				Console.WriteLine($"Day 21, Part 1: {day21Part1Solution}");
+				Console.WriteLine($"Day 21, Part 2: {day21Part2Solution}");
+				Console.WriteLine($"Time Taken: {sw.ElapsedTicks}");
+			}
 		}
 	}
 }
